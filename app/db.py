@@ -32,8 +32,8 @@ class Lead(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(200), nullable=False)
-    phone = Column(String(50), nullable=False)
-    email = Column(String(200), nullable=False)
+    phone = Column(String(50), nullable=False, unique=True)
+    email = Column(String(200), nullable=False, unique=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     queries = relationship("QueryLog", back_populates="lead")
