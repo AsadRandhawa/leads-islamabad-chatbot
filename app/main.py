@@ -78,16 +78,25 @@ def chat(req: ChatRequest):
     result = engine.answer(req.message)
 
     # Log every question + answer for follow-up/engagement, tied to the
-    # lead if we have one.
+    # lead if we have one. This must NEVER break the actual chat response —
+    # if a client sent a stale/invalid lead_id (e.g. from localStorage
+    # pointing at a database that got reset), log it as anonymous instead
+    # of failing the whole request.
     db = get_session()
     try:
+        lead_id = req.lead_id
+        if lead_id is not None and not db.query(Lead.id).filter(Lead.id == lead_id).first():
+            lead_id = None
+
         db.add(QueryLog(
-            lead_id=req.lead_id,
+            lead_id=lead_id,
             question=req.message,
             answer=result["answer"],
             sources=", ".join(result["sources"]),
         ))
         db.commit()
+    except Exception:
+        db.rollback()
     finally:
         db.close()
 
