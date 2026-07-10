@@ -146,7 +146,14 @@ def main():
         data = json.loads(path.read_text(encoding="utf-8"))
         cleaned = clean_markdown(data["markdown"])
         page_count += 1
-        campus = "islamabad" if "islamabad" in data["url"].lower() else "university-wide"
+        # A page's URL slug isn't a reliable Islamabad signal on its own —
+        # some genuinely Islamabad-specific posts have URLs like
+        # "/🎓-admissions-now-open-for-fall-2026-intake/" with no
+        # "islamabad" substring at all. Fall back to checking the URL/title
+        # OR each individual chunk's own text.
+        url_or_title_islamabad = (
+            "islamabad" in data["url"].lower() or "islamabad" in data["title"].lower()
+        )
 
         for i, raw_chunk in enumerate(build_chunks(cleaned, data["title"])):
             chunk, was_redacted = redact_spam(raw_chunk)
@@ -155,6 +162,9 @@ def main():
             if len(chunk) < MIN_CHUNK_LEN:
                 dropped_count += 1
                 continue
+
+            is_islamabad = url_or_title_islamabad or "islamabad" in chunk.lower()
+            campus = "islamabad" if is_islamabad else "university-wide"
 
             ids.append(f"{path.stem}-{i}")
             docs.append(chunk)
