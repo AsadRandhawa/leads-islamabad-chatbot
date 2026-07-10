@@ -23,6 +23,50 @@ MIN_CHUNK_LEN = 40      # drop anything shorter than this after spam redaction
 
 HEADING_RE = re.compile(r"^#{1,6}\s+.*$", re.MULTILINE)
 
+# A handful of high-value facts (address, phone, director, HEC status) that
+# real visitors ask constantly, but which kept losing the similarity-ranking
+# race against news teasers and other chunks sharing the same source page.
+# Rather than keep tuning chunking/TOP_K indefinitely, these are indexed as
+# their own clean, guaranteed-to-rank-well chunks. Update this list whenever
+# a core fact changes or a new one becomes worth guaranteeing.
+CURATED_FACTS = [
+    {
+        "text": "The Lahore Leads University Islamabad Campus is located "
+                "at Service Road (South), Near Metro Station G-13, "
+                "Srinagar Highway, Islamabad — also described as G-12, "
+                "opposite the G-13 Metro Bus stop.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Address",
+    },
+    {
+        "text": "The Islamabad campus contact number, including WhatsApp, "
+                "is +92 314 4477774. You can also email "
+                "admissions@leads.edu.pk for admissions queries.",
+        "url": "https://leads.edu.pk/%f0%9f%8e%93-admissions-now-open-for-fall-2026-intake/",
+        "title": "Islamabad Campus — Phone/WhatsApp",
+    },
+    {
+        "text": "The Campus Director of Lahore Leads University, "
+                "Islamabad Campus, is Professor Dr Munawar Iqbal Ahmed.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Campus Director",
+    },
+    {
+        "text": "The Lahore Leads University Islamabad Campus has "
+                "officially received HEC (Higher Education Commission) "
+                "NOC approval.",
+        "url": "https://leads.edu.pk/congratulations-leads-university-islamabad-campus-is-now-officially-hec-noc-approved/",
+        "title": "Islamabad Campus — HEC Approval",
+    },
+    {
+        "text": "The Islamabad campus offers these programs: BS Computer "
+                "Science, ADP Computer Science, ADP BBA, BBA, and an "
+                "IELTS Preparatory Course.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Programs Offered",
+    },
+]
+
 # Terms that flagged injected spam content on the live site when this
 # project was first put together. Sentences matching these get surgically
 # redacted from a chunk (not the whole chunk dropped) so legitimate content
@@ -174,6 +218,15 @@ def main():
                 "campus": campus,
             })
 
+    for i, fact in enumerate(CURATED_FACTS):
+        ids.append(f"curated-fact-{i}")
+        docs.append(f"Page: {fact['title']}\n{fact['text']}")
+        metadatas.append({
+            "url": fact["url"],
+            "title": fact["title"],
+            "campus": "islamabad",
+        })
+
     if not docs:
         raise SystemExit("Nothing to index after cleaning — check data/raw contents.")
 
@@ -181,7 +234,8 @@ def main():
     # dataset is small (a single campus site).
     collection.add(ids=ids, documents=docs, metadatas=metadatas)
 
-    print(f"Indexed {len(docs)} chunks from {page_count} pages.")
+    print(f"Indexed {len(docs)} chunks from {page_count} pages "
+          f"(including {len(CURATED_FACTS)} curated facts).")
     if redacted_count:
         print(f"Redacted spam sentences (casino/gambling injection) from "
               f"{redacted_count} chunks — rest of each chunk was kept.")
