@@ -110,5 +110,16 @@ class RagEngine:
             ],
         )
         answer_text = response.choices[0].message.content
-        sources = sorted({m["url"] for _, m in matches})
+
+        # Show only the most relevant sources, in relevance order — not
+        # every chunk we retrieved (TOP_K=10 pulls in low-ranked chunks
+        # just to give the model enough context; showing all of them as
+        # "sources" made barely-relevant pages show up next to answers).
+        MAX_SOURCES_SHOWN = 4
+        seen_urls = []
+        for _, m in matches:
+            if m["url"] not in seen_urls:
+                seen_urls.append(m["url"])
+        sources = seen_urls[:MAX_SOURCES_SHOWN]
+
         return {"answer": answer_text, "sources": sources}
