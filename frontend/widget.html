@@ -14,6 +14,15 @@
   .user { align-self: flex-end; background: #0b3d2e; color: #fff; }
   .bot { align-self: flex-start; background: #eef1ef; color: #222; }
   .sources { font-size: 11px; color: #777; margin-top: 4px; }
+  .typing { display: inline-flex; gap: 4px; padding: 4px 2px; align-items: center; }
+  .typing span { width: 6px; height: 6px; border-radius: 50%; background: #999; display: inline-block;
+                 animation: bounce 1.2s infinite ease-in-out; }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
   form.chatform { display: flex; border-top: 1px solid #eee; }
   form.chatform input { flex: 1; border: none; padding: 14px; font-size: 14px; outline: none; }
   form.chatform button { background: #0b3d2e; color: #fff; border: none; padding: 0 20px; cursor: pointer; }
@@ -63,7 +72,25 @@ const gateForm = document.getElementById("gateForm");
 const gateError = document.getElementById("gateError");
 
 let leadId = localStorage.getItem("leadId");
-if (leadId) gate.style.display = "none";
+if (leadId) {
+  gate.style.display = "none";
+}
+
+const WELCOME_MESSAGE =
+  "Hi! I'm here to help with questions about Leads University's Islamabad " +
+  "Campus — programs, admissions, fees, scholarships, and more. What would " +
+  "you like to know?";
+
+function showWelcome() {
+  addMessage(WELCOME_MESSAGE, "bot");
+}
+
+// Show the welcome message right away for returning visitors (gate already
+// passed in a previous session); for first-time visitors it's shown right
+// after they submit the gate form below instead.
+if (leadId) {
+  showWelcome();
+}
 
 gateForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -88,6 +115,7 @@ gateForm.addEventListener("submit", async (e) => {
     leadId = data.lead_id;
     localStorage.setItem("leadId", leadId);
     gate.style.display = "none";
+    showWelcome();
   } catch (err) {
     gateError.textContent = "Something went wrong — please check your details and try again.";
   }
@@ -107,12 +135,28 @@ function addMessage(text, who, sources) {
   messages.scrollTop = messages.scrollHeight;
 }
 
+function showTyping() {
+  const div = document.createElement("div");
+  div.className = "msg bot";
+  div.id = "typingIndicator";
+  div.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById("typingIndicator");
+  if (el) el.remove();
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = input.value.trim();
   if (!text) return;
   addMessage(text, "user");
   input.value = "";
+  input.disabled = true;
+  showTyping();
 
   try {
     const res = await fetch(`${API_BASE}/chat`, {
@@ -121,9 +165,14 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ message: text, lead_id: leadId ? Number(leadId) : null }),
     });
     const data = await res.json();
+    hideTyping();
     addMessage(data.answer, "bot", data.sources);
   } catch (err) {
+    hideTyping();
     addMessage("Sorry, I couldn't reach the server. Is the backend running?", "bot");
+  } finally {
+    input.disabled = false;
+    input.focus();
   }
 });
 </script>
