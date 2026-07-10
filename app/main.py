@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr
+from sqlalchemy.exc import IntegrityError
 
 from app.db import Lead, QueryLog, get_session, init_db
 from app.rag import RagEngine
@@ -47,16 +48,45 @@ class LeadResponse(BaseModel):
 @app.post("/leads", response_model=LeadResponse)
 def create_lead(req: LeadCreate):
     """Captures name/phone/email before someone starts chatting. No login —
-    just a contact record so the admissions team can follow up later."""
+    just a contact record so the admissions team can follow up later.
+    If someone already exists with the same email or phone (e.g. they
+    reopened the form in a new browser/incognito window), reuse that
+    record instead of creating a duplicate."""
     db = get_session()
     try:
-        lead = Lead(
-            name=req.name.strip(),
-            phone=req.phone.strip(),
-            email=str(req.email).strip(),
+        name = req.name.strip()
+        phone = req.phone.strip()
+        email = str(req.email).strip()
+
+        existing = (
+            db.query(Lead)
+            .filter((Lead.email.ilike(email)) | (Lead.phone == phone))
+            .order_by(Lead.id.asc())
+            .first()
         )
+        if existing:
+            return LeadResponse(lead_id=existing.id)
+
+        lead = Lead(name=name, phone=phone, email=email)
         db.add(lead)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            # Two requests for the same person landed at the same instant
+            # and both passed the "does this exist" check above before
+            # either committed. The unique constraint on phone/email caught
+            # it — roll back and just return the row that won the race,
+            # instead of surfacing a raw database error to the client.
+            db.rollback()
+            existing = (
+                db.query(Lead)
+                .filter((Lead.email.ilike(email)) | (Lead.phone == phone))
+                .order_by(Lead.id.asc())
+                .first()
+            )
+            if existing:
+                return LeadResponse(lead_id=existing.id)
+            raise
         db.refresh(lead)
         return LeadResponse(lead_id=lead.id)
     finally:
