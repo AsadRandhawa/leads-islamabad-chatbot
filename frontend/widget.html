@@ -2,48 +2,200 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Leads University Islamabad Campus — Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lahore Leads University — Islamabad Campus Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  body { font-family: system-ui, sans-serif; background: #f4f5f7; margin: 0; }
-  #chat { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 12px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; height: 640px;
-          position: relative; overflow: hidden; }
-  header { padding: 16px; background: #0b3d2e; color: #fff; border-radius: 12px 12px 0 0; font-weight: 600; }
-  #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; line-height: 1.4; font-size: 14px; }
-  .user { align-self: flex-end; background: #0b3d2e; color: #fff; }
-  .bot { align-self: flex-start; background: #eef1ef; color: #222; }
-  .sources { font-size: 11px; color: #777; margin-top: 4px; }
-  .typing { display: inline-flex; gap: 4px; padding: 4px 2px; align-items: center; }
-  .typing span { width: 6px; height: 6px; border-radius: 50%; background: #999; display: inline-block;
-                 animation: bounce 1.2s infinite ease-in-out; }
+  :root {
+    --navy: #313E69;
+    --navy-dark: #232C4D;
+    --navy-tint: #EEF0F6;
+    --gold: #FDCC2B;
+    --gold-dark: #E0AF1D;
+    --ink: #1C2340;
+    --paper: #FFFFFF;
+    --muted: #7A8099;
+    --font-display: 'PT Serif', Georgia, serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-body); }
+
+  /* ---------- Floating launcher ---------- */
+  #launcher {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--navy); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 20px rgba(35, 44, 77, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    z-index: 9998;
+  }
+  #launcher:hover { transform: scale(1.06); box-shadow: 0 8px 24px rgba(35, 44, 77, 0.45); }
+  #launcher svg { width: 28px; height: 28px; }
+  #launcher .pulse-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid var(--gold); opacity: 0;
+    animation: pulseRing 2.6s ease-out 1;
+    animation-delay: 0.6s;
+  }
+  @keyframes pulseRing {
+    0% { transform: scale(1); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #launcher .pulse-ring { animation: none; }
+  }
+
+  /* ---------- Panel ---------- */
+  #panel {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 380px; max-width: calc(100vw - 32px);
+    height: 620px; max-height: calc(100vh - 48px);
+    background: var(--paper); border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(28, 35, 64, 0.25);
+    display: none; flex-direction: column; overflow: hidden;
+    z-index: 9999;
+  }
+  #panel.open { display: flex; }
+
+  header {
+    background: var(--navy); color: #fff; padding: 16px 18px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 3px solid var(--gold);
+    flex-shrink: 0;
+  }
+  header .mark { width: 30px; height: 30px; flex-shrink: 0; }
+  header .titles { flex: 1; min-width: 0; }
+  header .titles .brand {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 15px; line-height: 1.2; letter-spacing: 0.2px;
+  }
+  header .titles .sub {
+    font-size: 11.5px; color: rgba(255,255,255,0.75); margin-top: 2px;
+  }
+  header .close {
+    background: none; border: none; color: rgba(255,255,255,0.8);
+    font-size: 20px; line-height: 1; cursor: pointer; padding: 4px;
+    flex-shrink: 0;
+  }
+  header .close:hover { color: #fff; }
+
+  #messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--paper);
+  }
+  .msg {
+    max-width: 82%; padding: 10px 14px; border-radius: 14px;
+    line-height: 1.45; font-size: 14px;
+  }
+  .user { align-self: flex-end; background: var(--navy); color: #fff; border-bottom-right-radius: 4px; }
+  .bot { align-self: flex-start; background: var(--navy-tint); color: var(--ink); border-bottom-left-radius: 4px; }
+
+  .typing { display: inline-flex; gap: 4px; padding: 3px 2px; align-items: center; }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--gold-dark);
+    display: inline-block; animation: bounce 1.2s infinite ease-in-out;
+  }
   .typing span:nth-child(2) { animation-delay: 0.15s; }
   .typing span:nth-child(3) { animation-delay: 0.3s; }
   @keyframes bounce {
     0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
     30% { transform: translateY(-4px); opacity: 1; }
   }
-  form.chatform { display: flex; border-top: 1px solid #eee; }
-  form.chatform input { flex: 1; border: none; padding: 14px; font-size: 14px; outline: none; }
-  form.chatform button { background: #0b3d2e; color: #fff; border: none; padding: 0 20px; cursor: pointer; }
 
-  /* Lead-capture gate */
-  #gate { position: absolute; inset: 0; background: #fff; display: flex; flex-direction: column;
-          justify-content: center; padding: 28px; gap: 12px; }
-  #gate h2 { margin: 0 0 4px; font-size: 18px; color: #0b3d2e; }
-  #gate p { margin: 0 0 12px; font-size: 13px; color: #666; line-height: 1.4; }
-  #gate input { padding: 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-  #gate input:focus { border-color: #0b3d2e; }
-  #gate button { margin-top: 8px; padding: 13px; background: #0b3d2e; color: #fff; border: none;
-                 border-radius: 8px; font-size: 14px; cursor: pointer; }
-  #gate .error { color: #b3261e; font-size: 12px; min-height: 16px; }
+  form.chatform {
+    display: flex; gap: 8px; padding: 12px; border-top: 1px solid #E6E8F0;
+    flex-shrink: 0; background: var(--paper);
+  }
+  form.chatform input {
+    flex: 1; border: 1px solid #DADEEA; border-radius: 10px;
+    padding: 11px 13px; font-size: 14px; outline: none; font-family: var(--font-body);
+  }
+  form.chatform input:focus { border-color: var(--navy); }
+  form.chatform input:disabled { background: #F5F6FA; color: var(--muted); }
+  form.chatform button {
+    background: var(--gold); color: var(--navy-dark); border: none;
+    border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 14px;
+    cursor: pointer; font-family: var(--font-body);
+  }
+  form.chatform button:hover { background: var(--gold-dark); }
+
+  /* ---------- Lead-capture gate ---------- */
+  #gate {
+    position: absolute; inset: 0; background: var(--paper);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 28px; gap: 12px;
+  }
+  #gate .mark { width: 40px; height: 40px; margin-bottom: 4px; }
+  #gate h2 {
+    margin: 0 0 4px; font-family: var(--font-display); font-weight: 700;
+    font-size: 19px; color: var(--navy);
+  }
+  #gate p { margin: 0 0 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  #gate input {
+    padding: 12px; font-size: 14px; border: 1px solid #DADEEA;
+    border-radius: 10px; outline: none; font-family: var(--font-body);
+  }
+  #gate input:focus { border-color: var(--navy); }
+  #gate button {
+    margin-top: 8px; padding: 13px; background: var(--navy); color: #fff;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: var(--font-body);
+  }
+  #gate button:hover { background: var(--navy-dark); }
+  #gate .error { color: #B3261E; font-size: 12px; min-height: 16px; }
+
+  @media (max-width: 480px) {
+    #panel {
+      right: 12px; left: 12px; bottom: 12px; width: auto;
+      height: calc(100vh - 24px);
+    }
+    #launcher { bottom: 16px; right: 16px; }
+  }
 </style>
 </head>
 <body>
-<div id="chat">
-  <header>Leads University — Islamabad Campus Assistant</header>
+
+<button id="launcher" aria-label="Open chat with Islamabad Campus Assistant">
+  <span class="pulse-ring"></span>
+  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M24 4 L42 10 V24 C42 34 34.5 41.5 24 45 C13.5 41.5 6 34 6 24 V10 Z" fill="none" stroke="#FDCC2B" stroke-width="2.5"/>
+    <rect x="14" y="27" width="4" height="8" rx="1" fill="#FDCC2B"/>
+    <rect x="20" y="22" width="4" height="13" rx="1" fill="#FDCC2B"/>
+    <rect x="26" y="17" width="4" height="18" rx="1" fill="#FDCC2B"/>
+    <rect x="32" y="12" width="4" height="23" rx="1" fill="#FDCC2B"/>
+  </svg>
+</button>
+
+<div id="panel">
+  <header>
+    <svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 4 L42 10 V24 C42 34 34.5 41.5 24 45 C13.5 41.5 6 34 6 24 V10 Z" fill="none" stroke="#FDCC2B" stroke-width="2.5"/>
+      <rect x="14" y="27" width="4" height="8" rx="1" fill="#FDCC2B"/>
+      <rect x="20" y="22" width="4" height="13" rx="1" fill="#FDCC2B"/>
+      <rect x="26" y="17" width="4" height="18" rx="1" fill="#FDCC2B"/>
+      <rect x="32" y="12" width="4" height="23" rx="1" fill="#FDCC2B"/>
+    </svg>
+    <div class="titles">
+      <div class="brand">Lahore Leads University</div>
+      <div class="sub">Islamabad Campus Assistant</div>
+    </div>
+    <button class="close" id="closeBtn" aria-label="Close chat">&times;</button>
+  </header>
 
   <div id="gate">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 4 L42 10 V24 C42 34 34.5 41.5 24 45 C13.5 41.5 6 34 6 24 V10 Z" fill="none" stroke="#313E69" stroke-width="2.5"/>
+      <rect x="14" y="27" width="4" height="8" rx="1" fill="#FDCC2B"/>
+      <rect x="20" y="22" width="4" height="13" rx="1" fill="#FDCC2B"/>
+      <rect x="26" y="17" width="4" height="18" rx="1" fill="#FDCC2B"/>
+      <rect x="32" y="12" width="4" height="23" rx="1" fill="#FDCC2B"/>
+    </svg>
     <h2>Before we chat...</h2>
     <p>Tell us a bit about you so we can follow up if you'd like more information. No account or password needed.</p>
     <form id="gateForm">
@@ -70,6 +222,24 @@ const input = document.getElementById("input");
 const gate = document.getElementById("gate");
 const gateForm = document.getElementById("gateForm");
 const gateError = document.getElementById("gateError");
+const launcher = document.getElementById("launcher");
+const panel = document.getElementById("panel");
+const closeBtn = document.getElementById("closeBtn");
+
+launcher.addEventListener("click", () => {
+  panel.classList.add("open");
+  launcher.style.display = "none";
+  if (!gate.style.display || gate.style.display !== "none") {
+    // gate still showing (first time) — nothing extra to do
+  } else {
+    input.focus();
+  }
+});
+
+closeBtn.addEventListener("click", () => {
+  panel.classList.remove("open");
+  launcher.style.display = "flex";
+});
 
 let leadId = localStorage.getItem("leadId");
 if (leadId) {
@@ -85,9 +255,6 @@ function showWelcome() {
   addMessage(WELCOME_MESSAGE, "bot");
 }
 
-// Show the welcome message right away for returning visitors (gate already
-// passed in a previous session); for first-time visitors it's shown right
-// after they submit the gate form below instead.
 if (leadId) {
   showWelcome();
 }
@@ -116,21 +283,16 @@ gateForm.addEventListener("submit", async (e) => {
     localStorage.setItem("leadId", leadId);
     gate.style.display = "none";
     showWelcome();
+    input.focus();
   } catch (err) {
     gateError.textContent = "Something went wrong — please check your details and try again.";
   }
 });
 
-function addMessage(text, who, sources) {
+function addMessage(text, who) {
   const div = document.createElement("div");
   div.className = "msg " + who;
   div.textContent = text;
-  if (sources && sources.length) {
-    const s = document.createElement("div");
-    s.className = "sources";
-    s.textContent = "Sources: " + sources.join(", ");
-    div.appendChild(s);
-  }
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
 }
@@ -166,7 +328,7 @@ form.addEventListener("submit", async (e) => {
     });
     const data = await res.json();
     hideTyping();
-    addMessage(data.answer, "bot", data.sources);
+    addMessage(data.answer, "bot");
   } catch (err) {
     hideTyping();
     addMessage("Sorry, I couldn't reach the server. Is the backend running?", "bot");
