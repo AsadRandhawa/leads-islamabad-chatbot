@@ -289,12 +289,36 @@ gateForm.addEventListener("submit", async (e) => {
   }
 });
 
+let conversationHistory = [];
+const MAX_HISTORY_TURNS = 3;
+
 function addMessage(text, who) {
   const div = document.createElement("div");
   div.className = "msg " + who;
   div.textContent = text;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
+}
+
+function addMessageAnimated(text, who) {
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  messages.appendChild(div);
+  const words = text.split(" ");
+  let i = 0;
+  return new Promise((resolve) => {
+    function step() {
+      div.textContent = words.slice(0, i + 1).join(" ");
+      messages.scrollTop = messages.scrollHeight;
+      i++;
+      if (i < words.length) {
+        setTimeout(step, 22);
+      } else {
+        resolve();
+      }
+    }
+    step();
+  });
 }
 
 function showTyping() {
@@ -324,11 +348,22 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch(`${API_BASE}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, lead_id: leadId ? Number(leadId) : null }),
+      body: JSON.stringify({
+        message: text,
+        lead_id: leadId ? Number(leadId) : null,
+        history: conversationHistory,
+      }),
     });
     const data = await res.json();
     hideTyping();
-    addMessage(data.answer, "bot");
+    await addMessageAnimated(data.answer, "bot");
+
+    conversationHistory.push({ role: "user", content: text });
+    conversationHistory.push({ role: "assistant", content: data.answer });
+    const maxMessages = MAX_HISTORY_TURNS * 2;
+    if (conversationHistory.length > maxMessages) {
+      conversationHistory = conversationHistory.slice(-maxMessages);
+    }
   } catch (err) {
     hideTyping();
     addMessage("Sorry, I couldn't reach the server. Is the backend running?", "bot");
