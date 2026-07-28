@@ -7,10 +7,19 @@ from openai import OpenAI
 CHROMA_DIR = Path(__file__).parent.parent / "data" / "chroma"
 COLLECTION_NAME = "leads_islamabad"
 TOP_K = 10
+MAX_HISTORY_TURNS = 3  # user+assistant pairs kept for context
 
 SYSTEM_PROMPT = """You are the official virtual assistant for Lahore Leads \
 University's Islamabad Campus (leads.edu.pk). Answer student and visitor \
 questions using ONLY the context passages provided below.
+
+You will also see the recent conversation history. Use it to resolve \
+follow-ups and references — "what about BBA" after a question about BSCS \
+fees means "what's the fee for BBA", "his phone number" after a question \
+about the Campus Director means the Director's phone number, and so on. \
+Every rule below still applies to follow-up answers exactly as it does to \
+standalone questions — history changes what the person means, not what \
+you're allowed to say.
 
 Rules:
 - If the answer isn't in the context, say you don't have that information \
@@ -60,6 +69,12 @@ instead. This applies even when the question is phrased generically \
 ("the admissions office", "your office hours") without saying the word \
 "Islamabad" — always assume they mean the Islamabad campus, since that's \
 who you represent.
+- MULTI-PART QUESTIONS: if someone asks for several things in one message \
+(e.g. "the address, phone number, and Campus Director's name"), answer \
+EACH part separately using whichever passages apply to that part. Being \
+unsure or restricted on ONE part is never a reason to refuse the whole \
+question — answer everything you do have confidently, and only add a \
+caveat for the specific part you can't confirm.
 - If someone asks something entirely unrelated to the university (e.g. \
 general coding help, unrelated trivia, personal advice), don't say "I \
 don't have that information" as if it's a missing fact — instead say \
@@ -119,23 +134,42 @@ class RagEngine:
         metas = results["metadatas"][0]
         return list(zip(docs, metas))
 
-    def answer(self, query: str) -> dict:
-        matches = self.retrieve(query)
+    def answer(self, query: str, history: list[dict] | None = None) -> dict:
+        history = history or []
+        # Keep only the last few turns to bound token usage.
+        trimmed_history = history[-(MAX_HISTORY_TURNS * 2):]
+
+        # Retrieval query enrichment: a bare follow-up like "what about BBA?"
+        # carries almost no retrievable signal on its own. Folding in the
+        # last user turn gives vector search something concrete to match
+        # against (e.g. "What's the fee for BSCS? What about BBA?" now
+        # actually pulls fee-related chunks instead of generic program info).
+        last_user_turns = [h["content"] for h in trimmed_history if h.get("role") == "user"]
+        retrieval_query = query
+        if last_user_turns:
+            retrieval_query = f"{last_user_turns[-1]} {query}"
+
+        matches = self.retrieve(retrieval_query)
         context = "\n\n---\n\n".join(
             f"[Source: {m['title']} ({m['url']}) | Campus: {m.get('campus', 'unknown')}]\n{d}"
             for d, m in matches
         )
 
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        for turn in trimmed_history:
+            role = turn.get("role")
+            content = turn.get("content")
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": content})
+        messages.append({
+            "role": "user",
+            "content": f"Context:\n{context}\n\nQuestion: {query}",
+        })
+
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             max_tokens=600,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": f"Context:\n{context}\n\nQuestion: {query}",
-                },
-            ],
+            messages=messages,
         )
         answer_text = response.choices[0].message.content
 
