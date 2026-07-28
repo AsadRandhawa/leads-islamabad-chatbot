@@ -110,18 +110,19 @@
 
   form.chatform {
     display: flex; gap: 8px; padding: 12px; border-top: 1px solid #E6E8F0;
-    flex-shrink: 0; background: var(--paper);
+    flex-shrink: 0; background: var(--paper); align-items: flex-end;
   }
-  form.chatform input {
+  form.chatform textarea {
     flex: 1; border: 1px solid #DADEEA; border-radius: 10px;
     padding: 11px 13px; font-size: 14px; outline: none; font-family: var(--font-body);
+    resize: none; overflow-y: auto; max-height: 100px; line-height: 1.4;
   }
-  form.chatform input:focus { border-color: var(--navy); }
-  form.chatform input:disabled { background: #F5F6FA; color: var(--muted); }
+  form.chatform textarea:focus { border-color: var(--navy); }
+  form.chatform textarea:disabled { background: #F5F6FA; color: var(--muted); }
   form.chatform button {
     background: var(--gold); color: var(--navy-dark); border: none;
     border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 14px;
-    cursor: pointer; font-family: var(--font-body);
+    cursor: pointer; font-family: var(--font-body); height: 40px; flex-shrink: 0;
   }
   form.chatform button:hover { background: var(--gold-dark); }
 
@@ -209,7 +210,7 @@
 
   <div id="messages"></div>
   <form id="form" class="chatform">
-    <input id="input" placeholder="Ask about programs, admissions, fees..." autocomplete="off" />
+    <textarea id="input" placeholder="Ask about programs, admissions, fees..." rows="1"></textarea>
     <button type="submit">Send</button>
   </form>
 </div>
@@ -335,12 +336,27 @@ function hideTyping() {
   if (el) el.remove();
 }
 
+function autoGrow() {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 100) + "px";
+}
+input.addEventListener("input", autoGrow);
+
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    form.requestSubmit();
+  }
+  // Shift+Enter falls through and inserts a normal newline.
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = input.value.trim();
   if (!text) return;
   addMessage(text, "user");
   input.value = "";
+  input.style.height = "auto";
   input.disabled = true;
   showTyping();
 
