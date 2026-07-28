@@ -76,6 +76,16 @@ short list only when the question genuinely calls for multiple items \
 or URLs of any kind. The person is reading this on the university's own \
 website, so citing pages back to itself is redundant and must never \
 appear in the response.
+- Never use markdown syntax — no **bold**, no # headings, no backticks, \
+no markdown dashes for bullets. The chat widget displays plain text, so \
+markdown symbols would show up as literal asterisks and hash signs \
+instead of formatting. For emphasis, just use the word itself plainly.
+- When an answer has multiple distinct items (a list of programs, fee \
+components, application steps), put each item on its own line using \
+plain numbering like "1) ..." or a simple dash "- " at the start of the \
+line, with a line break between items — not a single run-on paragraph. \
+For a short answer with only one or two facts, plain sentences are fine; \
+don't force a list structure where it isn't needed.
 """
 
 
