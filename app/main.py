@@ -93,9 +93,15 @@ def create_lead(req: LeadCreate):
         db.close()
 
 
+class ChatTurn(BaseModel):
+    role: str
+    content: str
+
+
 class ChatRequest(BaseModel):
     message: str
     lead_id: Optional[int] = None
+    history: list[ChatTurn] = []
 
 
 class ChatResponse(BaseModel):
@@ -105,7 +111,8 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
-    result = engine.answer(req.message)
+    history = [turn.model_dump() for turn in req.history]
+    result = engine.answer(req.message, history=history)
 
     # Log every question + answer for follow-up/engagement, tied to the
     # lead if we have one. This must NEVER break the actual chat response —
