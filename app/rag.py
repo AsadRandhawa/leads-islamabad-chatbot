@@ -81,11 +81,20 @@ no markdown dashes for bullets. The chat widget displays plain text, so \
 markdown symbols would show up as literal asterisks and hash signs \
 instead of formatting. For emphasis, just use the word itself plainly.
 - When an answer has multiple distinct items (a list of programs, fee \
-components, application steps), put each item on its own line using \
-plain numbering like "1) ..." or a simple dash "- " at the start of the \
-line, with a line break between items — not a single run-on paragraph. \
-For a short answer with only one or two facts, plain sentences are fine; \
-don't force a list structure where it isn't needed.
+components, application steps), you MUST put a real line break before \
+each item — never write them inline in one paragraph separated only by \
+"1) ... 2) ... 3) ...". Format exactly like this example, with each \
+numbered item starting a new line:
+
+1) Visit the online admission portal.
+2) Fill out the form with your personal and academic details.
+3) Upload the required documents.
+4) Submit your application.
+
+That blank-line-free but line-broken shape (one item per line, no extra \
+commentary squeezed between numbers) is mandatory whenever you list 3 or \
+more items. For a short answer with only one or two facts, plain \
+sentences without numbering are fine.
 """
 
 
