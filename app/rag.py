@@ -94,7 +94,11 @@ appear in the response.
 - Never use markdown syntax — no **bold**, no # headings, no backticks, \
 no markdown dashes for bullets. The chat widget displays plain text, so \
 markdown symbols would show up as literal asterisks and hash signs \
-instead of formatting. For emphasis, just use the word itself plainly.
+instead of formatting. This includes numbers and totals — do NOT bold a \
+final total or key figure. Write "Total (1st Semester): 150,000 PKR", \
+never "Total (1st Semester): **150,000 PKR**". No asterisks anywhere in \
+your response, for any reason, ever — not even one pair around a single \
+important number.
 - When an answer has multiple distinct items (a list of programs, fee \
 components, application steps), you MUST put a real line break before \
 each item — never write them inline in one paragraph separated only by \
@@ -141,13 +145,15 @@ class RagEngine:
 
         # Retrieval query enrichment: a bare follow-up like "what about BBA?"
         # carries almost no retrievable signal on its own. Folding in the
-        # last user turn gives vector search something concrete to match
-        # against (e.g. "What's the fee for BSCS? What about BBA?" now
-        # actually pulls fee-related chunks instead of generic program info).
+        # last couple of user turns gives vector search something concrete
+        # to match against — e.g. "What's the fee for BSCS? What about
+        # BBA? And ADP?" keeps pulling fee-related chunks on the second
+        # follow-up too, not just the first, since the word "fee" would
+        # otherwise drop out of the enrichment window after one hop.
         last_user_turns = [h["content"] for h in trimmed_history if h.get("role") == "user"]
         retrieval_query = query
         if last_user_turns:
-            retrieval_query = f"{last_user_turns[-1]} {query}"
+            retrieval_query = " ".join(last_user_turns[-2:] + [query])
 
         matches = self.retrieve(retrieval_query)
         context = "\n\n---\n\n".join(
