@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Lahore Leads University — Islamabad Campus Assistant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,9 @@
 
   /* ---------- Floating launcher ---------- */
   #launcher {
-    position: fixed; bottom: 24px; right: 24px;
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    right: calc(24px + env(safe-area-inset-right, 0px));
     width: 60px; height: 60px; border-radius: 50%;
     background: var(--navy); border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
@@ -79,8 +81,9 @@
   }
   header .close {
     background: none; border: none; color: rgba(255,255,255,0.8);
-    font-size: 20px; line-height: 1; cursor: pointer; padding: 4px;
-    flex-shrink: 0;
+    font-size: 22px; line-height: 1; cursor: pointer;
+    padding: 8px; margin: -8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
   }
   header .close:hover { color: #fff; }
 
@@ -88,6 +91,7 @@
     flex: 1; overflow-y: auto; padding: 16px;
     display: flex; flex-direction: column; gap: 10px;
     background: var(--paper);
+    -webkit-overflow-scrolling: touch;
   }
   .msg {
     max-width: 82%; padding: 10px 14px; border-radius: 14px;
@@ -109,12 +113,14 @@
   }
 
   form.chatform {
-    display: flex; gap: 8px; padding: 12px; border-top: 1px solid #E6E8F0;
+    display: flex; gap: 8px; padding: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #E6E8F0;
     flex-shrink: 0; background: var(--paper); align-items: flex-end;
   }
   form.chatform textarea {
     flex: 1; border: 1px solid #DADEEA; border-radius: 10px;
-    padding: 11px 13px; font-size: 14px; outline: none; font-family: var(--font-body);
+    padding: 11px 13px; font-size: 16px; outline: none; font-family: var(--font-body);
     resize: none; overflow-y: auto; max-height: 100px; line-height: 1.4;
   }
   form.chatform textarea:focus { border-color: var(--navy); }
@@ -122,41 +128,26 @@
   form.chatform button {
     background: var(--gold); color: var(--navy-dark); border: none;
     border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 14px;
-    cursor: pointer; font-family: var(--font-body); height: 40px; flex-shrink: 0;
+    cursor: pointer; font-family: var(--font-body); height: 42px; flex-shrink: 0;
   }
   form.chatform button:hover { background: var(--gold-dark); }
 
-  /* ---------- Lead-capture gate ---------- */
-  #gate {
-    position: absolute; inset: 0; background: var(--paper);
-    display: flex; flex-direction: column; justify-content: center;
-    padding: 28px; gap: 12px;
-  }
-  #gate .mark { width: 40px; height: 40px; margin-bottom: 4px; }
-  #gate h2 {
-    margin: 0 0 4px; font-family: var(--font-display); font-weight: 700;
-    font-size: 19px; color: var(--navy);
-  }
-  #gate p { margin: 0 0 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
-  #gate input {
-    padding: 12px; font-size: 14px; border: 1px solid #DADEEA;
-    border-radius: 10px; outline: none; font-family: var(--font-body);
-  }
-  #gate input:focus { border-color: var(--navy); }
-  #gate button {
-    margin-top: 8px; padding: 13px; background: var(--navy); color: #fff;
-    border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
-    cursor: pointer; font-family: var(--font-body);
-  }
-  #gate button:hover { background: var(--navy-dark); }
-  #gate .error { color: #B3261E; font-size: 12px; min-height: 16px; }
-
-  @media (max-width: 480px) {
+  /* ---------- Mobile: full-screen panel, no floating card ---------- */
+  @media (max-width: 600px) {
     #panel {
-      right: 12px; left: 12px; bottom: 12px; width: auto;
-      height: calc(100vh - 24px);
+      right: 0; left: 0; top: 0; bottom: 0;
+      width: 100%; max-width: 100%;
+      height: 100dvh; max-height: 100dvh;
+      border-radius: 0;
     }
-    #launcher { bottom: 16px; right: 16px; }
+    header {
+      padding-top: calc(16px + env(safe-area-inset-top, 0px));
+    }
+    #launcher {
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      right: calc(16px + env(safe-area-inset-right, 0px));
+    }
+    .msg { max-width: 88%; }
   }
 </style>
 </head>
@@ -189,25 +180,6 @@
     <button class="close" id="closeBtn" aria-label="Close chat">&times;</button>
   </header>
 
-  <div id="gate">
-    <svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M24 4 L42 10 V24 C42 34 34.5 41.5 24 45 C13.5 41.5 6 34 6 24 V10 Z" fill="none" stroke="#313E69" stroke-width="2.5"/>
-      <rect x="14" y="27" width="4" height="8" rx="1" fill="#FDCC2B"/>
-      <rect x="20" y="22" width="4" height="13" rx="1" fill="#FDCC2B"/>
-      <rect x="26" y="17" width="4" height="18" rx="1" fill="#FDCC2B"/>
-      <rect x="32" y="12" width="4" height="23" rx="1" fill="#FDCC2B"/>
-    </svg>
-    <h2>Before we chat...</h2>
-    <p>Tell us a bit about you so we can follow up if you'd like more information. No account or password needed.</p>
-    <form id="gateForm">
-      <input id="gateName" placeholder="Full name" autocomplete="name" required />
-      <input id="gatePhone" placeholder="Phone number" autocomplete="tel" required />
-      <input id="gateEmail" type="email" placeholder="Email address" autocomplete="email" required />
-      <div class="error" id="gateError"></div>
-      <button type="submit">Start chatting</button>
-    </form>
-  </div>
-
   <div id="messages"></div>
   <form id="form" class="chatform">
     <textarea id="input" placeholder="Ask about programs, admissions, fees..." rows="1"></textarea>
@@ -220,74 +192,56 @@ const API_BASE = "https://leads-islamabad-chatbot-production.up.railway.app";
 const messages = document.getElementById("messages");
 const form = document.getElementById("form");
 const input = document.getElementById("input");
-const gate = document.getElementById("gate");
-const gateForm = document.getElementById("gateForm");
-const gateError = document.getElementById("gateError");
 const launcher = document.getElementById("launcher");
 const panel = document.getElementById("panel");
 const closeBtn = document.getElementById("closeBtn");
 
-launcher.addEventListener("click", () => {
-  panel.classList.add("open");
-  launcher.style.display = "none";
-  if (!gate.style.display || gate.style.display !== "none") {
-    // gate still showing (first time) — nothing extra to do
-  } else {
-    input.focus();
+// No in-widget login/lead form — identity is expected to come from the
+// hosting website's own login/signup flow. If the host page sets
+// window.LEADS_CHAT_USER = { name, phone, email } before this script
+// runs, we quietly register that person as a lead so query logging can
+// still be tied to them. Otherwise the chat just works anonymously.
+let leadId = null;
+
+async function registerHostUser() {
+  const user = window.LEADS_CHAT_USER;
+  if (!user || !user.name || !user.phone || !user.email) return;
+  try {
+    const res = await fetch(`${API_BASE}/leads`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      leadId = data.lead_id;
+    }
+  } catch (err) {
+    // Non-fatal — chat still works without a lead_id.
   }
-});
-
-closeBtn.addEventListener("click", () => {
-  panel.classList.remove("open");
-  launcher.style.display = "flex";
-});
-
-let leadId = localStorage.getItem("leadId");
-if (leadId) {
-  gate.style.display = "none";
 }
+registerHostUser();
 
 const WELCOME_MESSAGE =
   "Hi! I'm here to help with questions about Leads University's Islamabad " +
   "Campus — programs, admissions, fees, scholarships, and more. What would " +
   "you like to know?";
 
-function showWelcome() {
-  addMessage(WELCOME_MESSAGE, "bot");
-}
+let welcomeShown = false;
 
-if (leadId) {
-  showWelcome();
-}
-
-gateForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  gateError.textContent = "";
-  const name = document.getElementById("gateName").value.trim();
-  const phone = document.getElementById("gatePhone").value.trim();
-  const email = document.getElementById("gateEmail").value.trim();
-
-  if (!name || !phone || !email) {
-    gateError.textContent = "Please fill in all fields.";
-    return;
+launcher.addEventListener("click", () => {
+  panel.classList.add("open");
+  launcher.style.display = "none";
+  if (!welcomeShown) {
+    addMessage(WELCOME_MESSAGE, "bot");
+    welcomeShown = true;
   }
+  input.focus();
+});
 
-  try {
-    const res = await fetch(`${API_BASE}/leads`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, email }),
-    });
-    if (!res.ok) throw new Error("bad response");
-    const data = await res.json();
-    leadId = data.lead_id;
-    localStorage.setItem("leadId", leadId);
-    gate.style.display = "none";
-    showWelcome();
-    input.focus();
-  } catch (err) {
-    gateError.textContent = "Something went wrong — please check your details and try again.";
-  }
+closeBtn.addEventListener("click", () => {
+  panel.classList.remove("open");
+  launcher.style.display = "flex";
 });
 
 let conversationHistory = [];
