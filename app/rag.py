@@ -30,6 +30,23 @@ def _looks_like_followup(query: str) -> bool:
         return True
     return len(query.split()) <= SHORT_FOLLOWUP_WORD_LIMIT
 
+
+# Curated facts (see ingest/build_index.py CURATED_FACTS) are single chunks
+# competing against much larger, multi-chunk program/fee pages. A clean
+# standalone question about one of them retrieves fine, but bundling 3-4
+# topics into one multi-part question dilutes the combined query enough
+# that these single chunks can lose the ranking race even though each is
+# individually easy to answer. Rather than rely purely on similarity
+# ranking, force-include the relevant curated fact whenever its topic is
+# mentioned in the question, regardless of how diluted the overall query is.
+CURATED_FACT_TRIGGERS = {
+    "curated-fact-0": re.compile(r"\b(address|location|located|where)\b", re.IGNORECASE),
+    "curated-fact-1": re.compile(r"\b(phone|whatsapp|contact\s+number|call)\b", re.IGNORECASE),
+    "curated-fact-2": re.compile(r"\bdirector\b", re.IGNORECASE),
+    "curated-fact-3": re.compile(r"\b(hec|noc|approv(al|ed))\b", re.IGNORECASE),
+    "curated-fact-4": re.compile(r"\b(programs?\s+offer|what\s+programs|courses?\s+offer)\b", re.IGNORECASE),
+}
+
 SYSTEM_PROMPT = """You are the official virtual assistant for Lahore Leads \
 University's Islamabad Campus (leads.edu.pk). Answer student and visitor \
 questions using ONLY the context passages provided below.
@@ -95,6 +112,16 @@ instead. This applies even when the question is phrased generically \
 ("the admissions office", "your office hours") without saying the word \
 "Islamabad" — always assume they mean the Islamabad campus, since that's \
 who you represent.
+- When asked for the specific COURSES/subjects within a program's \
+curriculum (not just the program name itself), only list course titles \
+that appear verbatim in the context. Do NOT fill in generic-sounding CS/ \
+business curriculum topics from general knowledge (e.g. "Algorithms", \
+"Software Development Methodologies") if the actual specific course list \
+isn't present in the retrieved passages — that's a name-hallucination \
+risk applied to courses instead of people. If the specific course list \
+isn't in context, say you don't have the detailed course list and \
+suggest checking the program's page directly, rather than improvising \
+one.
 - MULTI-PART QUESTIONS: if someone asks for several things in one message \
 (e.g. "the address, phone number, and Campus Director's name"), answer \
 EACH part separately using whichever passages apply to that part. Being \
@@ -182,6 +209,28 @@ class RagEngine:
             retrieval_query = " ".join(last_user_turns[-2:] + [query])
 
         matches = self.retrieve(retrieval_query)
+
+        # Force-include any curated facts whose trigger keyword appears in
+        # the ORIGINAL question (not the enriched retrieval query, which
+        # can be noisy) — this is what rescues multi-part questions like
+        # "the address, phone number, and Campus Director's name" from
+        # losing individual facts to dilution.
+        already_have = {m["url"] for _, m in matches}
+        for fact_id, trigger_re in CURATED_FACT_TRIGGERS.items():
+            if not trigger_re.search(query):
+                continue
+            try:
+                got = self.collection.get(ids=[fact_id])
+            except Exception:
+                continue
+            if not got or not got.get("ids"):
+                continue
+            fact_url = got["metadatas"][0]["url"]
+            if fact_url in already_have:
+                continue  # already surfaced naturally, no need to duplicate
+            matches.append((got["documents"][0], got["metadatas"][0]))
+            already_have.add(fact_url)
+
         context = "\n\n---\n\n".join(
             f"[Source: {m['title']} ({m['url']}) | Campus: {m.get('campus', 'unknown')}]\n{d}"
             for d, m in matches
