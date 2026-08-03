@@ -215,7 +215,13 @@ class RagEngine:
         # can be noisy) — this is what rescues multi-part questions like
         # "the address, phone number, and Campus Director's name" from
         # losing individual facts to dilution.
-        already_have = {m["url"] for _, m in matches}
+        #
+        # Dedup on exact chunk TEXT, not URL — several curated facts (e.g.
+        # address, Campus Director, programs offered) legitimately share
+        # the same source URL since they all come from the same real page.
+        # Deduping by URL would let one of them falsely "cover for" the
+        # others and get skipped, even though they're different content.
+        already_have_text = {d for d, _ in matches}
         for fact_id, trigger_re in CURATED_FACT_TRIGGERS.items():
             if not trigger_re.search(query):
                 continue
@@ -225,11 +231,11 @@ class RagEngine:
                 continue
             if not got or not got.get("ids"):
                 continue
-            fact_url = got["metadatas"][0]["url"]
-            if fact_url in already_have:
-                continue  # already surfaced naturally, no need to duplicate
-            matches.append((got["documents"][0], got["metadatas"][0]))
-            already_have.add(fact_url)
+            fact_doc = got["documents"][0]
+            if fact_doc in already_have_text:
+                continue  # this exact chunk already surfaced naturally
+            matches.append((fact_doc, got["metadatas"][0]))
+            already_have_text.add(fact_doc)
 
         context = "\n\n---\n\n".join(
             f"[Source: {m['title']} ({m['url']}) | Campus: {m.get('campus', 'unknown')}]\n{d}"
