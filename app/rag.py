@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 import chromadb
@@ -8,6 +9,26 @@ CHROMA_DIR = Path(__file__).parent.parent / "data" / "chroma"
 COLLECTION_NAME = "leads_islamabad"
 TOP_K = 10
 MAX_HISTORY_TURNS = 3  # user+assistant pairs kept for context
+
+# Only enrich the retrieval query with prior turns when the current message
+# actually looks like a follow-up (short, or leans on a pronoun/reference
+# to something said earlier). A clean standalone question like "Who is the
+# Campus Director?" should search on its own merits — blending in unrelated
+# prior turns can dilute the match enough that the right curated fact drops
+# out of the results, and the model may fall back on guessing instead of
+# saying it doesn't know.
+REFERENTIAL_RE = re.compile(
+    r"\b(he|him|his|she|her|it|that|this|those|these|they|them|same|"
+    r"cheaper|more expensive|instead|ones?)\b",
+    re.IGNORECASE,
+)
+SHORT_FOLLOWUP_WORD_LIMIT = 3
+
+
+def _looks_like_followup(query: str) -> bool:
+    if REFERENTIAL_RE.search(query):
+        return True
+    return len(query.split()) <= SHORT_FOLLOWUP_WORD_LIMIT
 
 SYSTEM_PROMPT = """You are the official virtual assistant for Lahore Leads \
 University's Islamabad Campus (leads.edu.pk). Answer student and visitor \
@@ -24,6 +45,11 @@ you're allowed to say.
 Rules:
 - If the answer isn't in the context, say you don't have that information \
 and suggest they contact the Islamabad campus directly rather than guessing.
+- NEVER invent a person's name, title, or identity. Names are the single \
+highest-risk thing to guess — if a name (Campus Director, Dean, faculty \
+member, anyone) isn't written verbatim in the context passages below, do \
+not produce one that "sounds plausible." Say you don't have that name \
+rather than offering any name at all, even a partial or hedged one.
 - A fact doesn't need to be in a neat "Label: value" format to count. If a \
 [Campus: islamabad] passage mentions something as an ordinary sentence \
 (e.g. a welcome message saying "our campus situated in G-12 opposite G-13 \
@@ -152,7 +178,7 @@ class RagEngine:
         # otherwise drop out of the enrichment window after one hop.
         last_user_turns = [h["content"] for h in trimmed_history if h.get("role") == "user"]
         retrieval_query = query
-        if last_user_turns:
+        if last_user_turns and _looks_like_followup(query):
             retrieval_query = " ".join(last_user_turns[-2:] + [query])
 
         matches = self.retrieve(retrieval_query)
