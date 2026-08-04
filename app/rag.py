@@ -46,7 +46,7 @@ CURATED_FACT_TRIGGERS = {
     "curated-fact-3": re.compile(r"\b(hec|noc|approv(al|ed))\b", re.IGNORECASE),
     "curated-fact-4": re.compile(r"\b(programs?\s+offer|what\s+programs|courses?\s+offer)\b", re.IGNORECASE),
     "curated-fact-5": re.compile(r"\b(website|apply|admission\s+link|portal|register|registration)\b", re.IGNORECASE),
-    "curated-fact-6": re.compile(r"specializ|specialis", re.IGNORECASE),
+    "curated-fact-6": re.compile(r"specializ|specialis|cializ|cialis", re.IGNORECASE),
     "curated-fact-7": re.compile(r"\b(hostel|transport)\b", re.IGNORECASE),
     "curated-fact-8": re.compile(r"\b(2nd\s+semester|second\s+semester)\b", re.IGNORECASE),
 }
@@ -71,6 +71,16 @@ about the Campus Director means the Director's phone number, and so on. \
 Every rule below still applies to follow-up answers exactly as it does to \
 standalone questions — history changes what the person means, not what \
 you're allowed to say.
+
+SELF-CONSISTENCY: before saying "I don't have that information" or giving \
+a fact, check whether YOU already answered this in an earlier turn of \
+this same conversation (visible in the history above). If you already \
+gave a confident answer earlier, do not contradict it later — repeat or \
+restate that same answer instead of second-guessing yourself just \
+because this turn's retrieved context looks different (e.g. a typo in \
+the new question, or different chunks being retrieved this time). Your \
+own earlier answer in this conversation is a reliable source too, not \
+just the context passages.
 
 Rules:
 - If the answer isn't in the context, say you don't have that information \
