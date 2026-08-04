@@ -65,6 +65,50 @@ CURATED_FACTS = [
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Programs Offered",
     },
+    {
+        "text": "The official Islamabad Campus website is "
+                "https://isb.leads.edu.pk. To apply for admission, use "
+                "the direct application link: "
+                "https://apply.leads.edu.pk/registration/iao",
+        "url": "https://isb.leads.edu.pk",
+        "title": "Islamabad Campus — Website & Admission Link",
+    },
+    {
+        "text": "BS Computer Science (BSCS) at the Islamabad campus offers "
+                "specializations in AI, Cyber Security, and Data Science. "
+                "BBA at the Islamabad campus offers specializations in "
+                "Finance, Banking, Data Analytics, and Digital Marketing.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Program Specializations",
+    },
+    {
+        "text": "Yes, hostel and transport facilities are available at "
+                "the Islamabad campus.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Hostel & Transport",
+    },
+    {
+        # Derived, not invented: the confirmed 1st-semester fee tables
+        # explicitly label Admission Fee, Enrollment Fee, and Library Fee
+        # as "(once)" and Tuition Fee / Examination Fee as "(per
+        # semester)". The 2nd semester total is therefore just the
+        # recurring items, dropping the one-time ones — a direct
+        # consequence of data already trusted elsewhere, not a guess.
+        "text": "2nd semester fees at the Islamabad campus (the one-time "
+                "Admission, Enrollment, and Library fees are only charged "
+                "in the 1st semester — 2nd semester only has the "
+                "recurring per-semester charges): "
+                "BS Computer Science (BSCS): Tuition Fee 120,000 PKR + "
+                "Examination Fee 5,000 PKR = 125,000 PKR total for the "
+                "2nd semester. "
+                "BBA: Tuition Fee 100,000 PKR + Examination Fee 5,000 PKR "
+                "= 105,000 PKR total for the 2nd semester. "
+                "ADP (Business Administration / Computer Science): "
+                "Tuition Fee 65,000 PKR + Examination Fee 5,000 PKR = "
+                "70,000 PKR total for the 2nd semester.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — 2nd Semester Fee Structure",
+    },
 ]
 
 # Terms that flagged injected spam content on the live site when this
