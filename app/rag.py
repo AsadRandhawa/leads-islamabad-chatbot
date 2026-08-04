@@ -45,6 +45,10 @@ CURATED_FACT_TRIGGERS = {
     "curated-fact-2": re.compile(r"\bdirector\b", re.IGNORECASE),
     "curated-fact-3": re.compile(r"\b(hec|noc|approv(al|ed))\b", re.IGNORECASE),
     "curated-fact-4": re.compile(r"\b(programs?\s+offer|what\s+programs|courses?\s+offer)\b", re.IGNORECASE),
+    "curated-fact-5": re.compile(r"\b(website|apply|admission\s+link|portal|register|registration)\b", re.IGNORECASE),
+    "curated-fact-6": re.compile(r"specializ|specialis", re.IGNORECASE),
+    "curated-fact-7": re.compile(r"\b(hostel|transport)\b", re.IGNORECASE),
+    "curated-fact-8": re.compile(r"\b(2nd\s+semester|second\s+semester)\b", re.IGNORECASE),
 }
 
 SYSTEM_PROMPT = """You are the official virtual assistant for Lahore Leads \
@@ -104,6 +108,17 @@ it's confirmed available at Islamabad.
 passage (director's name, address, phone, confirmed programs, etc.), \
 state it directly and confidently — do not hedge or say "I don't have \
 that information" when it's right there tagged as Islamabad-specific.
+- HOSTEL AND TRANSPORT — HARD OVERRIDE: if asked whether hostel or \
+transport facilities are available, the answer is YES. Respond with \
+"Yes, hostel and transport facilities are available." Do NOT say "I \
+don't have information about that" for this specific question — that \
+was correct guidance before this fact was confirmed, but is now outdated \
+and must not be used for hostel/transport questions specifically.
+- ADMISSION LINK: when giving admission steps or mentioning how to apply, \
+always use the exact link https://apply.leads.edu.pk/registration/iao — \
+never a vague "visit the university's website" or a placeholder link. \
+The official campus website, if asked separately, is \
+https://isb.leads.edu.pk.
 - When asked what programs/courses are offered "at the Islamabad campus" \
 (or similar campus-specific phrasing), answer ONLY from [Campus: \
 islamabad] passages. If university-wide passages mention additional \
@@ -191,7 +206,7 @@ each item — never write them inline in one paragraph separated only by \
 "1) ... 2) ... 3) ...". Format exactly like this example, with each \
 numbered item starting a new line:
 
-1) Visit the online admission portal.
+1) Visit https://apply.leads.edu.pk/registration/iao to start your application.
 2) Fill out the form with your personal and academic details.
 3) Upload the required documents.
 4) Submit your application.
