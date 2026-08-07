@@ -119,16 +119,18 @@
     flex-shrink: 0; background: var(--paper); align-items: flex-end;
   }
   form.chatform textarea {
-    flex: 1; border: 1px solid #DADEEA; border-radius: 10px;
-    padding: 11px 13px; font-size: 16px; outline: none; font-family: var(--font-body);
-    resize: none; overflow-y: auto; max-height: 100px; line-height: 1.4;
+    flex: 1; border: 1px solid #DADEEA; border-radius: 22px;
+    padding: 11px 14px; font-size: 16px; outline: none; font-family: var(--font-body);
+    resize: none; overflow-y: hidden; min-height: 42px; max-height: 84px;
+    line-height: 1.4; transition: height 0.1s ease;
   }
   form.chatform textarea:focus { border-color: var(--navy); }
   form.chatform textarea:disabled { background: #F5F6FA; color: var(--muted); }
   form.chatform button {
     background: var(--gold); color: var(--navy-dark); border: none;
-    border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 14px;
-    cursor: pointer; font-family: var(--font-body); height: 42px; flex-shrink: 0;
+    border-radius: 50%; width: 42px; height: 42px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; cursor: pointer; flex-shrink: 0;
   }
   form.chatform button:hover { background: var(--gold-dark); }
 
@@ -182,13 +184,18 @@
 
   <div id="messages"></div>
   <form id="form" class="chatform">
-    <textarea id="input" placeholder="Ask about programs, admissions, fees..." rows="1"></textarea>
-    <button type="submit">Send</button>
+    <textarea id="input" placeholder="Ask your question…" rows="1"></textarea>
+    <button type="submit" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4L20 12H14V20H10V12H4L12 4Z" fill="currentColor"/>
+      </svg>
+    </button>
   </form>
 </div>
 
 <script>
 const API_BASE = "https://leads-islamabad-chatbot-production.up.railway.app";
+// const API_BASE = window.LEADS_CHAT_API || "http://127.0.0.1:8000";
 const messages = document.getElementById("messages");
 const form = document.getElementById("form");
 const input = document.getElementById("input");
@@ -250,7 +257,11 @@ const MAX_HISTORY_TURNS = 3;
 function addMessage(text, who) {
   const div = document.createElement("div");
   div.className = "msg " + who;
-  div.textContent = text;
+  if (who === "bot") {
+    div.innerHTML = markdownToHtml(text);
+  } else {
+    div.textContent = text;
+  }
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
 }
@@ -263,17 +274,55 @@ function addMessageAnimated(text, who) {
   let i = 0;
   return new Promise((resolve) => {
     function step() {
-      div.textContent = words.slice(0, i + 1).join(" ");
+      // During animation show a plain-text version without markdown markers
+      div.textContent = stripMarkdown(words.slice(0, i + 1).join(" "));
       messages.scrollTop = messages.scrollHeight;
       i++;
       if (i < words.length) {
         setTimeout(step, 22);
       } else {
+        // Replace with formatted, safe HTML when animation finishes
+        if (who === "bot") {
+          div.innerHTML = markdownToHtml(text);
+        } else {
+          div.textContent = text;
+        }
         resolve();
       }
     }
     step();
   });
+}
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function markdownToHtml(text) {
+  // Escape first to prevent XSS, then convert a few lightweight markdown patterns
+  let s = escapeHtml(text);
+  // Bold **text**
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic *text*
+  s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Inline code `code`
+  s = s.replace(/`([^`]+?)`/g, '<code>$1</code>');
+  // Preserve line breaks
+  s = s.replace(/\n/g, '<br>');
+  return s;
+}
+
+function stripMarkdown(text) {
+  // Remove markdown markers for interim plain-text display
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`([^`]+?)`/g, '$1');
 }
 
 function showTyping() {
@@ -292,8 +341,10 @@ function hideTyping() {
 
 function autoGrow() {
   input.style.height = "auto";
-  input.style.height = Math.min(input.scrollHeight, 100) + "px";
+  const nextHeight = Math.min(input.scrollHeight, 84);
+  input.style.height = nextHeight + "px";
 }
+
 input.addEventListener("input", autoGrow);
 
 input.addEventListener("keydown", (e) => {
