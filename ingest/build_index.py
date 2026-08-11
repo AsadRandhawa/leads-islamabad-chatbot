@@ -59,9 +59,26 @@ CURATED_FACTS = [
         "title": "Islamabad Campus — HEC Approval",
     },
     {
-        "text": "The Islamabad campus offers these programs: BS Computer "
-                "Science, ADP Computer Science, ADP BBA, BBA, and an "
-                "IELTS Preparatory Course.",
+        "text": "At the Islamabad campus, the following programs are currently offered:\n\n"
+                "Department of Computer Science:\n"
+                "- ADP Computer Science\n"
+                "- ADP Software Engineering\n"
+                "- BS Computer Science\n"
+                "- BS Software Engineering\n"
+                "- BS Data Science\n"
+                "- BS Cybersecurity\n"
+                "- MPhil Computer Science\n\n"
+                "Department of Business Administration:\n"
+                "- ADP Business Administration\n"
+                "- ADP Accounting & Finance\n"
+                "- ADP Fintech\n"
+                "- ADP Business & Information System\n"
+                "- BS Fintech\n"
+                "- BS Accounting & Finance\n"
+                "- BS Business & Information System\n"
+                "- BBA\n"
+                "- MBA\n\n"
+                "Additionally, short/prep courses such as IELTS may also be offered.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Programs Offered",
     },
@@ -72,6 +89,12 @@ CURATED_FACTS = [
                 "https://apply.leads.edu.pk/registration/iao",
         "url": "https://isb.leads.edu.pk",
         "title": "Islamabad Campus — Website & Admission Link",
+    },
+    {
+        "text": "A minimum of 50 percent marks in FSC is required for admission "
+                "to BBA, BS Computer Science, and ADP at the Islamabad campus.",
+        "url": "https://isb.leads.edu.pk",
+        "title": "Islamabad Campus — Admission Marks Requirement",
     },
     {
         "text": "BS Computer Science (BSCS) at the Islamabad campus offers "
@@ -232,6 +255,19 @@ def main():
 
     for path in RAW_DIR.glob("*.json"):
         data = json.loads(path.read_text(encoding="utf-8"))
+
+        # Skip non-Islamabad departments/faculties that are not part of the
+        # Islamabad campus programs, including Allied Health and general program pages.
+        if (
+            "allied-health" in data["url"].lower()
+            or "allied health" in data["title"].lower()
+            or "our-programs" in data["url"].lower()
+            or "academic-department" in data["url"].lower()
+            or data["title"].lower() == "our programs - leads university"
+            or data["title"].lower() == "academic department"
+        ):
+            continue
+
         cleaned = clean_markdown(data["markdown"])
         page_count += 1
         # A page's URL slug isn't a reliable Islamabad signal on its own —

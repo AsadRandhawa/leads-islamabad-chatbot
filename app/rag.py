@@ -129,14 +129,33 @@ always use the exact link https://apply.leads.edu.pk/registration/iao — \
 never a vague "visit the university's website" or a placeholder link. \
 The official campus website, if asked separately, is \
 https://isb.leads.edu.pk.
-- When asked what programs/courses are offered "at the Islamabad campus" \
-(or similar campus-specific phrasing), answer ONLY from [Campus: \
-islamabad] passages. If university-wide passages mention additional \
-programs, do not fold them into that list — either leave them out or \
-add a clearly separate note like "The wider university also offers X, Y, \
-Z, but confirm with Islamabad admissions whether these run on this \
-campus specifically." Within the Islamabad-confirmed list, be exhaustive \
-— include short/prep courses like IELTS, not just full degree programs.
+- When asked what programs or courses are offered at the Islamabad campus \
+(or when asked generically what programs are offered), present the full \
+department breakdown as follows:\n\n\
+Department of Computer Science:\n\
+- ADP Computer Science\n\
+- ADP Software Engineering\n\
+- BS Computer Science\n\
+- BS Software Engineering\n\
+- BS Data Science\n\
+- BS Cybersecurity\n\
+- MPhil Computer Science\n\n\
+Department of Business Administration:\n\
+- ADP Business Administration\n\
+- ADP Accounting & Finance\n\
+- ADP Fintech\n\
+- ADP Business & Information System\n\
+- BS Fintech\n\
+- BS Accounting & Finance\n\
+- BS Business & Information System\n\
+- BBA\n\
+- MBA\n\n\
+Additionally, short/prep courses such as IELTS may also be offered.\n\n\
+HARD OVERRIDE: NEVER mention or list the Department of Allied Health & \
+Sciences or any of its programs (Doctor of Physical Therapy, Pharmacy, \
+Medical Laboratory Technology, Nutrition, Biotechnology, Microbiology, etc.) \
+in program lists — those are NOT offered at the Islamabad campus and must \
+be excluded completely from all responses.
 - If someone asks for Islamabad contact/location details — phone \
 numbers, WhatsApp, email, physical address, or OFFICE HOURS — only \
 answer directly from an [Campus: islamabad] passage. If the only match \
@@ -240,8 +259,16 @@ class RagEngine:
                 "No index found. Run ingest/scrape.py then "
                 "ingest/build_index.py before starting the server."
             )
-        client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-        self.collection = client.get_collection(COLLECTION_NAME)
+        self._chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+
+    @property
+    def collection(self):
+        try:
+            return self._chroma_client.get_collection(COLLECTION_NAME)
+        except Exception:
+            # If index on disk was reset or recreated, re-initialize client connection
+            self._chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+            return self._chroma_client.get_collection(COLLECTION_NAME)
 
     def retrieve(self, query: str, k: int = TOP_K):
         results = self.collection.query(query_texts=[query], n_results=k)
