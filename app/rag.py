@@ -5,6 +5,8 @@ from pathlib import Path
 import chromadb
 from openai import OpenAI
 
+from app.curated_facts import CURATED_FACTS
+
 CHROMA_DIR = Path(__file__).parent.parent / "data" / "chroma"
 COLLECTION_NAME = "leads_islamabad"
 TOP_K = 10
@@ -31,24 +33,23 @@ def _looks_like_followup(query: str) -> bool:
     return len(query.split()) <= SHORT_FOLLOWUP_WORD_LIMIT
 
 
-# Curated facts (see ingest/build_index.py CURATED_FACTS) are single chunks
-# competing against much larger, multi-chunk program/fee pages. A clean
-# standalone question about one of them retrieves fine, but bundling 3-4
-# topics into one multi-part question dilutes the combined query enough
-# that these single chunks can lose the ranking race even though each is
-# individually easy to answer. Rather than rely purely on similarity
-# ranking, force-include the relevant curated fact whenever its topic is
-# mentioned in the question, regardless of how diluted the overall query is.
+# Curated facts (see app/curated_facts.py) are single chunks competing
+# against much larger, multi-chunk program/fee pages. A clean standalone
+# question about one of them retrieves fine, but bundling 3-4 topics into
+# one multi-part question dilutes the combined query enough that these
+# single chunks can lose the ranking race even though each is individually
+# easy to answer. Rather than rely purely on similarity ranking,
+# force-include the relevant curated fact whenever its topic is mentioned
+# in the question, regardless of how diluted the overall query is.
+#
+# Built dynamically from CURATED_FACTS (same list build_index.py uses to
+# create the chunks) instead of a hand-maintained parallel dict — this is
+# what prevents facts and triggers from silently drifting out of sync when
+# someone adds or reorders a fact.
 CURATED_FACT_TRIGGERS = {
-    "curated-fact-0": re.compile(r"\b(address|location|located|where)\b", re.IGNORECASE),
-    "curated-fact-1": re.compile(r"\b(phone|whatsapp|contact\s+number|call)\b", re.IGNORECASE),
-    "curated-fact-2": re.compile(r"\bdirector\b", re.IGNORECASE),
-    "curated-fact-3": re.compile(r"\b(hec|noc|approv(al|ed))\b", re.IGNORECASE),
-    "curated-fact-4": re.compile(r"\b(programs?\s+offer|what\s+programs|courses?\s+offer)\b", re.IGNORECASE),
-    "curated-fact-5": re.compile(r"\b(website|apply|admission\s+link|portal|register|registration)\b", re.IGNORECASE),
-    "curated-fact-6": re.compile(r"specializ|specialis|cializ|cialis", re.IGNORECASE),
-    "curated-fact-7": re.compile(r"\b(hostel|transport)\b", re.IGNORECASE),
-    "curated-fact-8": re.compile(r"\b(2nd\s+semester|second\s+semester)\b", re.IGNORECASE),
+    f"curated-fact-{i}": re.compile(fact["trigger"], re.IGNORECASE)
+    for i, fact in enumerate(CURATED_FACTS)
+    if fact.get("trigger")
 }
 
 SYSTEM_PROMPT = """You are the official virtual assistant for Lahore Leads \
@@ -210,6 +211,40 @@ number is worse than no number. This is different from a person doing \
 their own arithmetic on a figure you've already given them (e.g. "what's \
 double that fee") — plain requested math on a number already stated is \
 fine; inventing an unconfirmed official amount is not.
+- FEE QUESTIONS — LEAD WITH THE SCHOLARSHIP CHECK: when someone asks what \
+a program's fee/tuition costs, don't just state the flat sticker price \
+and stop — many students qualify for a real discount, and leading with \
+the full number can needlessly discourage a prospective student. Briefly \
+give the standard fee, then proactively ask for their aggregate (Matric \
+percentage + Intermediate FIRST YEAR percentage only — the second year \
+is not included) so you can tell them what they'd actually likely pay. \
+For example: "The standard 1st semester fee for BSCS is 150,000 PKR \
+total. Many students pay less though — what's your aggregate (Matric % \
+plus Intermediate 1st year % only)? If it's 85% or above you'd get a 75% \
+discount on tuition, and there's also a 25% tuition waiver for need-based, \
+orphan, or early-admission (before 25th August) cases even without that."
+- Once you know a student's aggregate/situation, apply the confirmed \
+discount tiers directly: aggregate 85%+ → 75% off the TUITION FEE portion \
+only (not admission/enrollment/library fees); needy background, orphan, \
+or early admission (before 25th August) → 25% off tuition; FATA or other \
+Balochistan cities, based on need → 50% off. Applying these percentages \
+IS legitimate math, unlike the installment-splitting case above — the \
+percentages themselves are confirmed real policy, not something you're \
+inventing. Feel free to show the discounted number, e.g. "75% off \
+120,000 PKR tuition = 30,000 PKR tuition after discount, so your total \
+1st semester fee would be about 60,000 PKR instead of 150,000 PKR." Only \
+one discount tier applies at a time — don't stack multiple percentages \
+together unless the context explicitly says they combine.
+- SPECIAL CASE — borderline first-year marks: if a student's Matric \
+aggregate component is 50%+ but their Intermediate FIRST YEAR marks are \
+below 50% (e.g. 47%), and they've ALREADY appeared in Intermediate \
+SECOND YEAR exams, do not tell them they're ineligible. Tell them to \
+submit their documents and apply so the admissions team can review their \
+case directly — don't make an automated accept/reject call for this \
+specific situation.
+- If a student says an original document (marksheet, certificate, etc.) \
+is missing, tell them a photocopy is acceptable for the admission \
+process — don't tell them they can't proceed without the original.
 - Be direct and brief. Answer exactly what was asked in as few sentences \
 as possible — no preamble, no restating the question, no filler closers \
 like "For more information, visit the website" or "Feel free to ask if \
