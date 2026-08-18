@@ -9,9 +9,16 @@ Usage:
 
 import json
 import re
+import sys
 from pathlib import Path
 
 import chromadb
+
+# Allow `python ingest/build_index.py` to import from the app/ package —
+# needed since this script is invoked directly, not as `python -m ...`, so
+# Python only puts ingest/ on sys.path by default, not the project root.
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from app.curated_facts import CURATED_FACTS  # noqa: E402
 
 RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
 CHROMA_DIR = Path(__file__).parent.parent / "data" / "chroma"
@@ -22,117 +29,6 @@ CHUNK_OVERLAP = 120
 MIN_CHUNK_LEN = 40      # drop anything shorter than this after spam redaction
 
 HEADING_RE = re.compile(r"^#{1,6}\s+.*$", re.MULTILINE)
-
-# A handful of high-value facts (address, phone, director, HEC status) that
-# real visitors ask constantly, but which kept losing the similarity-ranking
-# race against news teasers and other chunks sharing the same source page.
-# Rather than keep tuning chunking/TOP_K indefinitely, these are indexed as
-# their own clean, guaranteed-to-rank-well chunks. Update this list whenever
-# a core fact changes or a new one becomes worth guaranteeing.
-CURATED_FACTS = [
-    {
-        "text": "The Lahore Leads University Islamabad Campus is located "
-                "at Service Road (South), Near Metro Station G-13, "
-                "Srinagar Highway, Islamabad — also described as G-12, "
-                "opposite the G-13 Metro Bus stop.",
-        "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Address",
-    },
-    {
-        "text": "The Islamabad campus contact number, including WhatsApp, "
-                "is +92 314 4477774. You can also email "
-                "admissions@leads.edu.pk for admissions queries.",
-        "url": "https://leads.edu.pk/%f0%9f%8e%93-admissions-now-open-for-fall-2026-intake/",
-        "title": "Islamabad Campus — Phone/WhatsApp",
-    },
-    {
-        "text": "The Campus Director of Lahore Leads University, "
-                "Islamabad Campus, is Professor Dr Munawar Iqbal Ahmed.",
-        "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Campus Director",
-    },
-    {
-        "text": "The Lahore Leads University Islamabad Campus has "
-                "officially received HEC (Higher Education Commission) "
-                "NOC approval.",
-        "url": "https://leads.edu.pk/congratulations-leads-university-islamabad-campus-is-now-officially-hec-noc-approved/",
-        "title": "Islamabad Campus — HEC Approval",
-    },
-    {
-        "text": "At the Islamabad campus, the following programs are currently offered:\n\n"
-                "Department of Computer Science:\n"
-                "- ADP Computer Science\n"
-                "- ADP Software Engineering\n"
-                "- BS Computer Science\n"
-                "- BS Software Engineering\n"
-                "- BS Data Science\n"
-                "- BS Cybersecurity\n"
-                "- MPhil Computer Science\n\n"
-                "Department of Business Administration:\n"
-                "- ADP Business Administration\n"
-                "- ADP Accounting & Finance\n"
-                "- ADP Fintech\n"
-                "- ADP Business & Information System\n"
-                "- BS Fintech\n"
-                "- BS Accounting & Finance\n"
-                "- BS Business & Information System\n"
-                "- BBA\n"
-                "- MBA\n\n"
-                "Additionally, short/prep courses such as IELTS may also be offered.",
-        "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Programs Offered",
-    },
-    {
-        "text": "The official Islamabad Campus website is "
-                "https://isb.leads.edu.pk. To apply for admission, use "
-                "the direct application link: "
-                "https://apply.leads.edu.pk/registration/iao",
-        "url": "https://isb.leads.edu.pk",
-        "title": "Islamabad Campus — Website & Admission Link",
-    },
-    {
-        "text": "A minimum of 50 percent marks in FSC is required for admission "
-                "to BBA, BS Computer Science, and ADP at the Islamabad campus.",
-        "url": "https://isb.leads.edu.pk",
-        "title": "Islamabad Campus — Admission Marks Requirement",
-    },
-    {
-        "text": "BS Computer Science (BSCS) at the Islamabad campus offers "
-                "specializations in AI, Cyber Security, and Data Science. "
-                "BBA at the Islamabad campus offers specializations in "
-                "Finance, Banking, Data Analytics, and Digital Marketing.",
-        "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Program Specializations",
-    },
-    {
-        "text": "Yes, hostel and transport facilities are available at "
-                "the Islamabad campus.",
-        "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Hostel & Transport",
-    },
-    {
-        # Derived, not invented: the confirmed 1st-semester fee tables
-        # explicitly label Admission Fee, Enrollment Fee, and Library Fee
-        # as "(once)" and Tuition Fee / Examination Fee as "(per
-        # semester)". The 2nd semester total is therefore just the
-        # recurring items, dropping the one-time ones — a direct
-        # consequence of data already trusted elsewhere, not a guess.
-        "text": "2nd semester fees at the Islamabad campus (the one-time "
-                "Admission, Enrollment, and Library fees are only charged "
-                "in the 1st semester — 2nd semester only has the "
-                "recurring per-semester charges): "
-                "BS Computer Science (BSCS): Tuition Fee 120,000 PKR + "
-                "Examination Fee 5,000 PKR = 125,000 PKR total for the "
-                "2nd semester. "
-                "BBA: Tuition Fee 100,000 PKR + Examination Fee 5,000 PKR "
-                "= 105,000 PKR total for the 2nd semester. "
-                "ADP (Business Administration / Computer Science): "
-                "Tuition Fee 65,000 PKR + Examination Fee 5,000 PKR = "
-                "70,000 PKR total for the 2nd semester.",
-        "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — 2nd Semester Fee Structure",
-    },
-]
 
 # Terms that flagged injected spam content on the live site when this
 # project was first put together. Sentences matching these get surgically
