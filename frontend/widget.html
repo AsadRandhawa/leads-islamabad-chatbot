@@ -25,31 +25,67 @@
   body { margin: 0; font-family: var(--font-body); }
 
   /* ---------- Floating launcher ---------- */
+  /* TEMPORARY: sized up + labeled for visibility while testing on a blank
+     page with no surrounding site content. Once embedded on the real
+     isb.leads.edu.pk site, this can shrink back down to a subtler corner
+     bubble (revert width/height to 60px, remove #launcherLabel, and swap
+     the infinite pulse back to a one-time animation) since it won't need
+     to fight for attention against a blank screen anymore. */
   #launcher {
     position: fixed;
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-    right: calc(24px + env(safe-area-inset-right, 0px));
-    width: 60px; height: 60px; border-radius: 50%;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    right: calc(28px + env(safe-area-inset-right, 0px));
+    width: 76px; height: 76px; border-radius: 50%;
     background: var(--navy); border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 6px 20px rgba(35, 44, 77, 0.35);
+    box-shadow: 0 8px 28px rgba(35, 44, 77, 0.45);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     z-index: 9998;
   }
-  #launcher:hover { transform: scale(1.06); box-shadow: 0 8px 24px rgba(35, 44, 77, 0.45); }
-  #launcher svg { width: 28px; height: 28px; }
+  #launcher:hover { transform: scale(1.06); box-shadow: 0 10px 32px rgba(35, 44, 77, 0.55); }
+  #launcher svg { width: 34px; height: 34px; }
   #launcher .pulse-ring {
     position: absolute; inset: 0; border-radius: 50%;
     border: 2px solid var(--gold); opacity: 0;
-    animation: pulseRing 2.6s ease-out 1;
-    animation-delay: 0.6s;
+    animation: pulseRing 2.2s ease-out infinite;
   }
   @keyframes pulseRing {
     0% { transform: scale(1); opacity: 0.9; }
-    100% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.7); opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     #launcher .pulse-ring { animation: none; }
+  }
+
+  #launcherLabel {
+    position: fixed;
+    bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+    right: calc(112px + env(safe-area-inset-right, 0px));
+    background: var(--paper); color: var(--navy);
+    padding: 11px 16px; border-radius: 12px;
+    font-family: var(--font-body); font-weight: 600; font-size: 14px;
+    box-shadow: 0 6px 20px rgba(28, 35, 64, 0.2);
+    border: 1px solid #E6E8F0;
+    white-space: nowrap;
+    animation: labelFloat 2.4s ease-in-out infinite;
+    z-index: 9997;
+    pointer-events: none;
+  }
+  #launcherLabel::after {
+    content: ""; position: absolute; top: 50%; right: -6px;
+    transform: translateY(-50%) rotate(45deg);
+    width: 12px; height: 12px; background: var(--paper);
+    border-right: 1px solid #E6E8F0; border-bottom: 1px solid #E6E8F0;
+  }
+  @keyframes labelFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #launcherLabel { animation: none; }
+  }
+  @media (max-width: 600px) {
+    #launcherLabel { display: none; }
   }
 
   /* ---------- Panel ---------- */
@@ -155,6 +191,7 @@
 </head>
 <body>
 
+<div id="launcherLabel">💬 Ask us anything!</div>
 <button id="launcher" aria-label="Open chat with Islamabad Campus Assistant">
   <span class="pulse-ring"></span>
   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -235,10 +272,12 @@ const WELCOME_MESSAGE =
   "you like to know?";
 
 let welcomeShown = false;
+const launcherLabel = document.getElementById("launcherLabel");
 
 launcher.addEventListener("click", () => {
   panel.classList.add("open");
   launcher.style.display = "none";
+  launcherLabel.style.display = "none";
   if (!welcomeShown) {
     addMessage(WELCOME_MESSAGE, "bot");
     welcomeShown = true;
@@ -249,6 +288,7 @@ launcher.addEventListener("click", () => {
 closeBtn.addEventListener("click", () => {
   panel.classList.remove("open");
   launcher.style.display = "flex";
+  launcherLabel.style.display = "block";
 });
 
 let conversationHistory = [];
