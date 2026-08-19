@@ -225,15 +225,38 @@ CURATED_FACTS = [
         "trigger": r"\bpre-?medical\b",
     },
     {
-        "text": "No admission test is required to get admission at the "
-                "Islamabad campus. Admission decisions are based solely "
-                "on the student's Matric and Intermediate aggregate (see "
-                "the Aggregate Calculation Formula fact for how that's "
-                "calculated) — there is no separate entry/admission test "
-                "for undergraduate programs like BS Computer Science, "
-                "ADP, or BBA at the Islamabad campus.",
+        "text": "Currently, no admission test is required to get "
+                "admission at the Islamabad campus. Admission decisions "
+                "are based solely on the student's Matric and "
+                "Intermediate aggregate (see the Aggregate Calculation "
+                "Formula fact for how that's calculated) — there is no "
+                "separate entry/admission test for undergraduate programs "
+                "like BS Computer Science, ADP, or BBA right now. "
+                "HOWEVER: this is tied to Early Bird admission — seats "
+                "with guaranteed scholarships are limited and are being "
+                "filled on a rolling basis. Once those Early Bird seats "
+                "are filled, future applicants may be required to appear "
+                "for a mandatory entrance test instead, with admission "
+                "decided by the test merit list. Students should be "
+                "encouraged to apply promptly to secure a no-test Early "
+                "Bird seat with a guaranteed scholarship while it's still "
+                "available.",
         "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — No Admission Test Required",
+        "title": "Islamabad Campus — No Admission Test Required (Currently, Early Bird)",
         "trigger": r"\b(admission\s+test|entry\s+test|entrance\s+test)\b",
+    },
+    {
+        "text": "Early Bird admission seats with guaranteed scholarships "
+                "are limited and are being filled on a rolling basis. "
+                "Students are encouraged to apply as soon as possible to "
+                "secure an Early Bird seat and lock in a guaranteed "
+                "scholarship without needing to take an entrance test. "
+                "Once Early Bird seats are filled, subsequent applicants "
+                "may be required to appear for a mandatory entrance test, "
+                "with admission decided based on the test merit list "
+                "instead of the usual aggregate-based process.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Early Bird Seats Limited, Apply Promptly",
+        "trigger": r"\b(early\s+bird|seats?\s+fill|hurry|apply\s+(soon|quickly|now)|guaranteed\s+scholarship)\b",
     },
 ]
