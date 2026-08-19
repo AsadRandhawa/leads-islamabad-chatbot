@@ -134,12 +134,13 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: list[str]
+    needs_followup: bool = False
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     history = [turn.model_dump() for turn in req.history]
-    result = engine.answer(req.message, history=history)
+    result = engine.answer(req.message, history=history, channel="website")
 
     # Log every question + answer for follow-up/engagement, tied to the
     # lead if we have one. This must NEVER break the actual chat response —
@@ -173,9 +174,15 @@ def partner_chat(req: ChatRequest):
     Deliberately does NOT touch Lead/QueryLog — most website chats are
     already anonymous too (see create_lead's docstring above), so WhatsApp
     follows the same pattern rather than being a special case. Revisit
-    this if/when lead-scoring behavior gets built for WhatsApp."""
+    this if/when lead-scoring behavior gets built for WhatsApp.
+
+    channel="whatsapp" swaps the system prompt's fallback/escalation
+    phrasing — the website variant tells people to "WhatsApp us," which
+    makes no sense to someone already messaging this exact WhatsApp
+    number, so that phrasing is replaced with "flagged for our team to
+    follow up here" instead (see rag.py's ESCALATION_TEXT)."""
     history = [turn.model_dump() for turn in req.history]
-    result = engine.answer(req.message, history=history)
+    result = engine.answer(req.message, history=history, channel="whatsapp")
     return ChatResponse(**result)
 
 

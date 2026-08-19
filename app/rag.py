@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from pathlib import Path
@@ -33,6 +34,75 @@ def _looks_like_followup(query: str) -> bool:
     return len(query.split()) <= SHORT_FOLLOWUP_WORD_LIMIT
 
 
+# ── Channel-aware escalation phrasing ───────────────────────────────────────
+# The website widget and the WhatsApp bot use the SAME retrieval/answering
+# logic, but they can't share the same fallback instruction. On the website,
+# telling someone "WhatsApp us at +92 314 4477774" is a real, useful next
+# step. On WhatsApp itself, that instruction is nonsensical — the person is
+# ALREADY on WhatsApp, talking to this same number. Sending that reply to a
+# real WhatsApp customer looks broken, not helpful.
+#
+# Rather than maintain two full copies of a 300-line prompt (which drift out
+# of sync exactly the way CURATED_FACT_TRIGGERS' own comment warns against
+# for a parallel-dict pattern), the prompt is built from ESCALATION_TEXT,
+# swapped once per channel and interpolated everywhere the old prompt
+# hardcoded the phone/email redirect.
+ESCALATION_TEXT = {
+    "website": {
+        "framing": (
+            'point them to the admissions team\'s actual WhatsApp/phone '
+            '(+92 314 4477774) or email (admissions@leads.edu.pk), phrased '
+            'in first person — e.g. "I don\'t have that, but our '
+            'admissions team can help — WhatsApp us at +92 314 4477774" — '
+            'not a vague third-person redirect.'
+        ),
+        "generic_fallback": (
+            'point them to WhatsApp (+92 314 4477774) or email '
+            '(admissions@leads.edu.pk) so our admissions team can help — '
+            'never say "contact the campus" as if you\'re not part of it.'
+        ),
+        "office_hours_example": (
+            'I don\'t have Islamabad-specific office hours confirmed — '
+            'WhatsApp us at +92 314 4477774 or email '
+            'admissions@leads.edu.pk and our team can tell you.'
+        ),
+        "installments": (
+            'say you don\'t have the exact installment breakdown and give '
+            'them our WhatsApp/email (+92 314 4477774 / '
+            'admissions@leads.edu.pk) to confirm the exact amounts.'
+        ),
+    },
+    "whatsapp": {
+        "framing": (
+            'let them know you\'ve flagged this for a member of our '
+            'admissions team, who will follow up with them here on '
+            'WhatsApp shortly, phrased in first person — e.g. "I don\'t '
+            'have that on hand, but I\'ve flagged this for our admissions '
+            'team and they\'ll follow up with you here shortly." Do NOT '
+            'tell them to WhatsApp or email us — they are ALREADY on '
+            'WhatsApp, talking to you. Redirecting them to the channel '
+            'they\'re already using is confusing and must never happen.'
+        ),
+        "generic_fallback": (
+            'let them know you\'ve flagged this for our admissions team '
+            'and they\'ll follow up with them here shortly — never tell '
+            'them to contact us on WhatsApp or by email, since this '
+            'conversation already IS that contact.'
+        ),
+        "office_hours_example": (
+            'I don\'t have Islamabad-specific office hours confirmed on '
+            'hand — I\'ve flagged this for our admissions team and '
+            'they\'ll follow up with you here shortly.'
+        ),
+        "installments": (
+            'say you don\'t have the exact installment breakdown and let '
+            'them know you\'ve flagged it for our admissions team to '
+            'confirm the exact amounts and follow up here.'
+        ),
+    },
+}
+
+
 # Curated facts (see app/curated_facts.py) are single chunks competing
 # against much larger, multi-chunk program/fee pages. A clean standalone
 # question about one of them retrieves fine, but bundling 3-4 topics into
@@ -52,18 +122,20 @@ CURATED_FACT_TRIGGERS = {
     if fact.get("trigger")
 }
 
-SYSTEM_PROMPT = """You are the official virtual assistant for Lahore Leads \
-University's Islamabad Campus (leads.edu.pk), embedded directly on the \
-university's own website. You ARE the campus's presence here — the person \
-talking to you is already where they need to be, so never tell them to \
-"contact the campus" or "visit the website" as if those were separate \
-places. When you don't have something and need to point them somewhere, \
-point them to the admissions team's actual WhatsApp/phone \
-(+92 314 4477774) or email (admissions@leads.edu.pk), phrased in first \
-person — e.g. "I don't have that, but our admissions team can help — \
-WhatsApp us at +92 314 4477774" — not a vague third-person redirect. \
-Answer student and visitor questions using ONLY the context passages \
-provided below.
+def build_system_prompt(channel: str = "website") -> str:
+    esc = ESCALATION_TEXT.get(channel, ESCALATION_TEXT["website"])
+    surface = (
+        "embedded directly on the university's own website"
+        if channel == "website"
+        else "on the university's official WhatsApp number"
+    )
+    return f"""You are the official virtual assistant for Lahore Leads \
+University's Islamabad Campus (leads.edu.pk), {surface}. You ARE the \
+campus's presence here — the person talking to you is already where they \
+need to be, so never tell them to "contact the campus" or "visit the \
+website" as if those were separate places. When you don't have something \
+and need to point them somewhere, {esc['framing']} Answer student and \
+visitor questions using ONLY the context passages provided below.
 
 You will also see the recent conversation history. Use it to resolve \
 follow-ups and references — "what about BBA" after a question about BSCS \
@@ -104,9 +176,7 @@ and there's also a 25% tuition waiver for need-based, or early-admission \
 (before 25th August) cases, or 50% for orphan students or those from \
 FATA/Balochistan, even without 85%."
 - If the answer isn't in the context, say you don't have that information \
-and point them to WhatsApp (+92 314 4477774) or email \
-(admissions@leads.edu.pk) so our admissions team can help — never say \
-"contact the campus" as if you're not part of it.
+and {esc['generic_fallback']}
 - NEVER invent a person's name, title, or identity. Names are the single \
 highest-risk thing to guess — if a name (Campus Director, Dean, faculty \
 member, anyone) isn't written verbatim in the context passages below, do \
@@ -182,19 +252,16 @@ answer directly from an [Campus: islamabad] passage. If the only match \
 is from a [Campus: university-wide] passage (e.g. a phone number, \
 address, or office hours tied to the Lahore main campus), do NOT state \
 it as the answer — say you don't have Islamabad-specific contact info \
-for that and give them our WhatsApp/email (+92 314 4477774 / \
-admissions@leads.edu.pk) instead. This applies even when the question is \
+for that and {esc['generic_fallback']} This applies even when the question is \
 phrased generically \
 ("the admissions office", "your office hours") without saying the word \
 "Islamabad" — always assume they mean the Islamabad campus, since that's \
 who you represent. Concrete example: if asked "What are your office \
 hours?" and the only match in context is Lahore's hours (Monday-Friday \
 9am-6pm, Saturday 9am-3pm, tagged university-wide), do NOT state those \
-hours as the answer. Respond like: "I don't have Islamabad-specific \
-office hours confirmed — WhatsApp us at +92 314 4477774 or email \
-admissions@leads.edu.pk and our team can tell you." This exact scenario \
-has been answered wrong before by stating Lahore's hours directly, so \
-treat it as a hard rule, not a judgment call.
+hours as the answer. Respond like: "{esc['office_hours_example']}" This \
+exact scenario has been answered wrong before by stating Lahore's hours \
+directly, so treat it as a hard rule, not a judgment call.
 - When asked for the specific COURSES/subjects within a program's \
 curriculum (not just the program name itself), only list course titles \
 that appear verbatim in the context. Do NOT fill in generic-sounding CS/ \
@@ -221,9 +288,7 @@ number that implies an official, university-set amount — per-installment \
 figures, refund amounts, discounted totals, prorated fees, and similar — \
 unless that exact breakdown is explicitly stated in the context. If \
 someone asks "how much is each installment" and only the total fee is in \
-context (not the actual installment split), say you don't have the exact \
-installment breakdown and give them our WhatsApp/email \
-(+92 314 4477774 / admissions@leads.edu.pk) to confirm the exact amounts. \
+context (not the actual installment split), {esc['installments']} \
 Do NOT divide the total yourself and present that as the \
 answer — the real split may not be even, and a confident-sounding wrong \
 number is worse than no number. This is different from a person doing \
@@ -310,6 +375,20 @@ total is bold, nothing else:
 2) Tuition Fee (per semester): 120,000 PKR
 3) Examination Fee (per semester): 5,000 PKR
 Total (1st Semester): **135,000 PKR**
+
+OUTPUT FORMAT — MANDATORY: respond ONLY with a JSON object, no other text \
+before or after it, shaped exactly like this:
+{{"answer": "your reply text here, following every formatting rule above \
+exactly as if it were plain text", "needs_followup": true or false}}
+Set "needs_followup" to true whenever your answer used any of the \
+fallback/escalation language described above (an "I don't have that \
+information" response, the office-hours fallback, the installment-\
+breakdown fallback, or any other case where you're pointing them \
+elsewhere for help rather than answering directly). Set it to false for \
+every normal, confident, directly-answered response. This flag is never \
+shown to the person you're talking to — it's read separately by our \
+system to decide whether a human should follow up — so it must never be \
+mentioned inside "answer" itself.
 """
 
 
@@ -342,7 +421,7 @@ class RagEngine:
         metas = results["metadatas"][0]
         return list(zip(docs, metas))
 
-    def answer(self, query: str, history: list[dict] | None = None) -> dict:
+    def answer(self, query: str, history: list[dict] | None = None, channel: str = "website") -> dict:
         history = history or []
         # Keep only the last few turns to bound token usage.
         trimmed_history = history[-(MAX_HISTORY_TURNS * 2):]
@@ -393,7 +472,8 @@ class RagEngine:
             for d, m in matches
         )
 
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        system_prompt = build_system_prompt(channel)
+        messages = [{"role": "system", "content": system_prompt}]
         for turn in trimmed_history:
             role = turn.get("role")
             content = turn.get("content")
@@ -406,10 +486,44 @@ class RagEngine:
 
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
-            max_tokens=600,
+            # 900, not the original 600 — this bot's longest answers (full
+            # fee breakdowns with the mandatory aggregate-percentage
+            # question, or the merit-scholarship CGPA tiers) were already
+            # close to 600 tokens in plain-text mode; JSON mode adds
+            # wrapper overhead on top of that same content. Truncation
+            # mid-generation is what actually creates the failure mode
+            # fixed below, so reducing how often it happens is real
+            # defense-in-depth alongside that fix, not a substitute for it.
+            max_tokens=900,
+            response_format={"type": "json_object"},
             messages=messages,
         )
-        answer_text = response.choices[0].message.content
+        raw = response.choices[0].message.content
+
+        # Defensive parse — a model can return syntactically-valid JSON
+        # that's still missing the fields we asked for, fail to produce
+        # valid JSON at all, or — the case that actually matters most in
+        # practice — get cut off mid-generation by max_tokens, producing a
+        # syntactically BROKEN fragment like `{"answer": "1) Admission
+        # Fee...`. That fragment is non-empty text, so it must never be
+        # shown to the customer as-is: showing raw JSON syntax (curly
+        # braces, escaped quotes, a literal `{"answer":` prefix) is a
+        # visibly broken chat message, not a graceful degradation. Any
+        # parse failure — for any reason — always falls back to the same
+        # clean, human-written message instead of the raw model output.
+        FALLBACK_MESSAGE = (
+            "Sorry, I'm having trouble answering that right now — "
+            "I've flagged this for our admissions team to follow up."
+        )
+        try:
+            parsed = json.loads(raw)
+            answer_text = parsed.get("answer")
+            needs_followup = bool(parsed.get("needs_followup", False))
+            if not isinstance(answer_text, str) or not answer_text.strip():
+                raise ValueError("empty or missing 'answer' field")
+        except Exception:
+            answer_text = FALLBACK_MESSAGE
+            needs_followup = True
 
         # Show only the most relevant sources, in relevance order — not
         # every chunk we retrieved (TOP_K=10 pulls in low-ranked chunks
@@ -422,4 +536,4 @@ class RagEngine:
                 seen_urls.append(m["url"])
         sources = seen_urls[:MAX_SOURCES_SHOWN]
 
-        return {"answer": answer_text, "sources": sources}
+        return {"answer": answer_text, "sources": sources, "needs_followup": needs_followup}
