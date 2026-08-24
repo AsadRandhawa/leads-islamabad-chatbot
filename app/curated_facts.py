@@ -63,22 +63,20 @@ CURATED_FACTS = [
         "text": "At the Islamabad campus, the following programs are "
                 "currently offered:\n\n"
                 "Undergraduate (BS):\n"
-                "- Bachelor in Computer Sciences (BSCS) — with "
+                "1) Bachelor in Computer Sciences (BSCS) — with "
                 "specializations in AI, Data Sciences, Cyber Security, "
                 "and Software Engineering\n"
-                "- Bachelor in Business Administration (BBA) — with "
+                "2) Bachelor in Business Administration (BBA) — with "
                 "specializations in Digital Marketing, Data Analytics, "
                 "Finance, and Banking\n\n"
                 "Associate Degree Program (2 years):\n"
-                "- ADP in Computer Sciences\n"
-                "- ADP in Business Management\n\n"
-                "Additionally, short/prep courses such as IELTS may also "
-                "be offered. There is currently NO Engineering program "
-                "(civil, electrical, or otherwise) offered at the "
-                "Islamabad campus.",
+                "1) ADP in Computer Sciences\n"
+                "2) ADP in Business Management\n\n"
+                "Additionally, short/prep courses such as IELTS, CA, and "
+                "ACCA may also be offered.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Programs Offered (Corrected, per official brochure)",
-        "trigger": r"\b(programs?\s+offer|what\s+programs|courses?\s+offer|engineering)\b",
+        "trigger": r"\b(programs?\s+offer|what\s+programs|courses?\s+offer|engineering|medical|pharmacy|nursing|architecture|law\b)\b",
     },
     {
         "text": "The official Islamabad Campus website is "
@@ -117,30 +115,29 @@ CURATED_FACTS = [
         "trigger": r"\b(hostel|transport)\b",
     },
     {
-        "text": "Boys Hostel (Munawar Boys Hostel, M.B.H): Contact — "
-                "Capt. (R) Munawar Hussain, phone 0333-9564736. Address: "
-                "Old Kashmir Highway, G-12/1, Iqbal Town, Islamabad. "
-                "It's within walking distance of the Leads Islamabad "
-                "campus.",
+        "text": "Boys Hostel (Munawar Boys Hostel, M.B.H): Contact "
+                "number 0333-9564736. Address: Old Kashmir Highway, "
+                "G-12/1, Iqbal Town, Islamabad. It's within walking "
+                "distance of the Leads Islamabad campus.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Boys Hostel Details",
         "trigger": r"\b(hostel|boys?\s+hostel|male\s+hostel)\b",
     },
     {
-        "text": "Girls Hostel (Munawar Girls Hostel, M.G.H): Contact — "
-                "H/Capt (R) Munawar Hussain, phone 0313-9564736, "
-                "0303-8190786, or 0333-5751808. Address: Near G-13 Metro "
-                "Station, SLS School Street No. 2-B, Service Road G-12/1, "
-                "Islamabad. It's within walking distance of the Leads "
-                "Islamabad campus. It's a separate, dedicated building "
-                "with 24/7 security guards and CCTV surveillance, "
-                "operating since 2016. Rooms are fully furnished "
-                "(bi-seater, tri-seater, and tetra-seater options), with "
-                "laundry facilities, nutritious food options, a TV "
-                "lounge, and study areas. It's also about 5 minutes from "
-                "the G-13 Metro/NUST Bus Stop, with FAST University "
-                "Islamabad (H-11/4) and IIUI Girls Campus accessible by "
-                "university transport or metro.",
+        "text": "Girls Hostel (Munawar Girls Hostel, M.G.H): Contact "
+                "numbers 0313-9564736, 0303-8190786, or 0333-5751808. "
+                "Address: Near G-13 Metro Station, SLS School Street "
+                "No. 2-B, Service Road G-12/1, Islamabad. It's within "
+                "walking distance of the Leads Islamabad campus. It's a "
+                "separate, dedicated building with 24/7 security guards "
+                "and CCTV surveillance, operating since 2016. Rooms are "
+                "fully furnished (bi-seater, tri-seater, and "
+                "tetra-seater options), with laundry facilities, "
+                "nutritious food options, a TV lounge, and study areas. "
+                "It's also about 5 minutes from the G-13 Metro/NUST Bus "
+                "Stop, with FAST University Islamabad (H-11/4) and IIUI "
+                "Girls Campus accessible by university transport or "
+                "metro.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Girls Hostel Details",
         "trigger": r"\b(hostel|girls?\s+hostel|female\s+hostel)\b",
@@ -302,12 +299,16 @@ CURATED_FACTS = [
         "trigger": r"\b(early\s+bird|seats?\s+fill|hurry|apply\s+(soon|quickly|now)|guaranteed\s+scholarship)\b",
     },
     {
-        "text": "The Islamabad campus is co-educational — male and female "
-                "students study together in the same classes. There are "
-                "no separate classes or sections based on gender.",
+        "text": "Lahore Leads University Islamabad Campus combines modern "
+                "interactive education with complete cultural respect: "
+                "male and female students share the same academic "
+                "programs and classes, preparing them for professional, "
+                "real-world environments. Classrooms feature organized, "
+                "separate row arrangements for male and female students "
+                "to maintain focus, modesty, and mutual respect.",
         "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Co-Educational (Not Gender-Segregated)",
-        "trigger": r"\b(co-?education|coed|separate\s+class|gender\s+segregat|boys?\s+only|girls?\s+only|male\s+and\s+female|mixed\s+class)\b",
+        "title": "Islamabad Campus — Co-Education & Classroom Arrangement",
+        "trigger": r"\b(co-?education|coed|separate\s+class|gender\s+segregat|boys?\s+only|girls?\s+only|male\s+and\s+female|mixed\s+class|seating)\b",
     },
     {
         "text": "Buying a degree without genuinely completing the required "
@@ -325,5 +326,36 @@ CURATED_FACTS = [
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Academic Integrity (No Degree Buying / No Remote-Only Degrees)",
         "trigger": r"\b(buy\s+(a\s+)?degree|purchase\s+(a\s+)?degree|degree\s+without\s+(attending|studying|coming)|without\s+attending|sitting\s+(there|abroad|at\s+home)|from\s+abroad\s+without|no\s+need\s+to\s+attend)\b",
+    },
+    {
+        # Genuinely Lahore-specific, NOT Islamabad's — tagged
+        # "university-wide" (not the usual "islamabad" default) so the
+        # campus-scoping rules treat it correctly. This is fine and SHOULD
+        # be shared in two situations: (1) someone explicitly asks for
+        # Lahore/main campus contact info, or (2) the bot is redirecting
+        # someone to the main campus per the unavailable-field-or-program
+        # rule (e.g. they asked about Engineering/Medical/etc., which
+        # Islamabad doesn't offer). It should NOT be presented as if it
+        # were Islamabad's own contact info in any other context.
+        "text": "Lahore Main Campus contact details: Lahore Leads "
+                "University, DHA Phase V, Kamahan Road, Lahore, "
+                "Pakistan. Phone: 042-35927-411, 042-35927-413, "
+                "042-35927-415, or 0304-1111-552. Email: "
+                "admissions@leads.edu.pk.",
+        "url": "https://leads.edu.pk/contact-us/",
+        "title": "Lahore Main Campus — Contact Details",
+        "campus": "university-wide",
+        "trigger": r"\blahore\b|\bmain\s+campus\b|\bengineering\b|\bmedical\b|\bpharmacy\b|\bnursing\b|\barchitecture\b",
+    },
+    {
+        "text": "To continue receiving any scholarship or fee "
+                "discount/waiver at the Islamabad campus — whether it's "
+                "the merit scholarship, need-based waiver, orphan "
+                "discount, or the FATA/Balochistan discount — a student "
+                "must maintain a minimum CGPA of 3.0. Falling below a "
+                "3.0 CGPA may result in losing the scholarship.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Scholarship Maintenance Requirement (3.0 CGPA)",
+        "trigger": r"\b(cgpa|maintain|scholarship|discount|waiver|aggregate)\b",
     },
 ]
