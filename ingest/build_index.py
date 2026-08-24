@@ -153,7 +153,12 @@ def main():
         data = json.loads(path.read_text(encoding="utf-8"))
 
         # Skip non-Islamabad departments/faculties that are not part of the
-        # Islamabad campus programs, including Allied Health and general program pages.
+        # Islamabad campus programs, including Allied Health and general
+        # program pages. Also skip the Honhaar Scholarship pages —
+        # confirmed outdated/not applicable to the Islamabad campus (this
+        # was showing up in generic "do you offer scholarships?" answers,
+        # incorrectly claiming a 100%-tuition program that isn't real for
+        # this campus, alongside the actual confirmed 75/50/25% tiers).
         if (
             "allied-health" in data["url"].lower()
             or "allied health" in data["title"].lower()
@@ -161,6 +166,8 @@ def main():
             or "academic-department" in data["url"].lower()
             or data["title"].lower() == "our programs - leads university"
             or data["title"].lower() == "academic department"
+            or "honhaar" in data["url"].lower()
+            or "honhaar" in data["title"].lower()
         ):
             continue
 
@@ -200,7 +207,13 @@ def main():
         metadatas.append({
             "url": fact["url"],
             "title": fact["title"],
-            "campus": "islamabad",
+            # Defaults to "islamabad" since that's what nearly every
+            # curated fact is — but a fact can override this (e.g. Lahore
+            # main campus contact info, which is genuinely university-wide/
+            # Lahore-specific, not Islamabad's). Getting this right matters:
+            # mistagging Lahore info as "islamabad" would undermine the
+            # exact campus-scoping safety check the system prompt relies on.
+            "campus": fact.get("campus", "islamabad"),
         })
 
     if not docs:
