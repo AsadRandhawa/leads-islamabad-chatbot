@@ -47,29 +47,38 @@ CURATED_FACTS = [
         "trigger": r"\b(hec|noc|approv(al|ed))\b",
     },
     {
-        "text": "At the Islamabad campus, the following programs are currently offered:\n\n"
-                "Department of Computer Science:\n"
-                "- ADP Computer Science\n"
-                "- ADP Software Engineering\n"
-                "- BS Computer Science\n"
-                "- BS Software Engineering\n"
-                "- BS Data Science\n"
-                "- BS Cybersecurity\n"
-                "- MPhil Computer Science\n\n"
-                "Department of Business Administration:\n"
-                "- ADP Business Administration\n"
-                "- ADP Accounting & Finance\n"
-                "- ADP Fintech\n"
-                "- ADP Business & Information System\n"
-                "- BS Fintech\n"
-                "- BS Accounting & Finance\n"
-                "- BS Business & Information System\n"
-                "- BBA\n"
-                "- MBA\n\n"
-                "Additionally, short/prep courses such as IELTS may also be offered.",
+        # CORRECTED against the official printed admissions brochure
+        # (undergraduate programs flyer) — the Islamabad campus offers
+        # far fewer standalone degrees than an earlier version of this
+        # fact claimed. AI/Data Sciences/Cyber Security/Software
+        # Engineering and Digital Marketing/Data Analytics/Finance/
+        # Banking are SPECIALIZATION TRACKS within BSCS and BBA
+        # respectively — NOT separate standalone degree programs. There
+        # is currently NO Engineering program, NO MPhil, and NO separate
+        # BS Software Engineering / BS Data Science / BS Cybersecurity /
+        # BS Fintech / BS Accounting & Finance / MBA / ADP Accounting & 
+        # Finance / ADP Fintech at the Islamabad campus. Do not list any
+        # of those — this fact supersedes any broader university-wide
+        # catalog mentioned elsewhere in retrieved content.
+        "text": "At the Islamabad campus, the following programs are "
+                "currently offered:\n\n"
+                "Undergraduate (BS):\n"
+                "- Bachelor in Computer Sciences (BSCS) — with "
+                "specializations in AI, Data Sciences, Cyber Security, "
+                "and Software Engineering\n"
+                "- Bachelor in Business Administration (BBA) — with "
+                "specializations in Digital Marketing, Data Analytics, "
+                "Finance, and Banking\n\n"
+                "Associate Degree Program (2 years):\n"
+                "- ADP in Computer Sciences\n"
+                "- ADP in Business Management\n\n"
+                "Additionally, short/prep courses such as IELTS may also "
+                "be offered. There is currently NO Engineering program "
+                "(civil, electrical, or otherwise) offered at the "
+                "Islamabad campus.",
         "url": "https://leads.edu.pk/islamabad-campus/",
-        "title": "Islamabad Campus — Programs Offered",
-        "trigger": r"\b(programs?\s+offer|what\s+programs|courses?\s+offer)\b",
+        "title": "Islamabad Campus — Programs Offered (Corrected, per official brochure)",
+        "trigger": r"\b(programs?\s+offer|what\s+programs|courses?\s+offer|engineering)\b",
     },
     {
         "text": "The official Islamabad Campus website is "
@@ -88,10 +97,14 @@ CURATED_FACTS = [
         "trigger": r"\b(minimum\s+marks|marks\s+requirement|50\s*%\s+marks)\b",
     },
     {
-        "text": "BS Computer Science (BSCS) at the Islamabad campus offers "
-                "specializations in AI, Cyber Security, and Data Science. "
-                "BBA at the Islamabad campus offers specializations in "
-                "Finance, Banking, Data Analytics, and Digital Marketing.",
+        # Corrected to include Software Engineering, which the official
+        # brochure lists as a 4th BSCS specialization track (previously
+        # missing from this fact).
+        "text": "BS Computer Science (BSCS) at the Islamabad campus "
+                "offers specializations in AI, Data Sciences, Cyber "
+                "Security, and Software Engineering. BBA at the "
+                "Islamabad campus offers specializations in Digital "
+                "Marketing, Data Analytics, Finance, and Banking.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Program Specializations",
         "trigger": r"specializ|specialis|cializ|cialis",
@@ -102,6 +115,35 @@ CURATED_FACTS = [
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Hostel & Transport",
         "trigger": r"\b(hostel|transport)\b",
+    },
+    {
+        "text": "Boys Hostel (Munawar Boys Hostel, M.B.H): Contact — "
+                "Capt. (R) Munawar Hussain, phone 0333-9564736. Address: "
+                "Old Kashmir Highway, G-12/1, Iqbal Town, Islamabad. "
+                "It's within walking distance of the Leads Islamabad "
+                "campus.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Boys Hostel Details",
+        "trigger": r"\b(hostel|boys?\s+hostel|male\s+hostel)\b",
+    },
+    {
+        "text": "Girls Hostel (Munawar Girls Hostel, M.G.H): Contact — "
+                "H/Capt (R) Munawar Hussain, phone 0313-9564736, "
+                "0303-8190786, or 0333-5751808. Address: Near G-13 Metro "
+                "Station, SLS School Street No. 2-B, Service Road G-12/1, "
+                "Islamabad. It's within walking distance of the Leads "
+                "Islamabad campus. It's a separate, dedicated building "
+                "with 24/7 security guards and CCTV surveillance, "
+                "operating since 2016. Rooms are fully furnished "
+                "(bi-seater, tri-seater, and tetra-seater options), with "
+                "laundry facilities, nutritious food options, a TV "
+                "lounge, and study areas. It's also about 5 minutes from "
+                "the G-13 Metro/NUST Bus Stop, with FAST University "
+                "Islamabad (H-11/4) and IIUI Girls Campus accessible by "
+                "university transport or metro.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Girls Hostel Details",
+        "trigger": r"\b(hostel|girls?\s+hostel|female\s+hostel)\b",
     },
     {
         # Derived, not invented: the confirmed 1st-semester fee tables
@@ -258,5 +300,30 @@ CURATED_FACTS = [
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Early Bird Seats Limited, Apply Promptly",
         "trigger": r"\b(early\s+bird|seats?\s+fill|hurry|apply\s+(soon|quickly|now)|guaranteed\s+scholarship)\b",
+    },
+    {
+        "text": "The Islamabad campus is co-educational — male and female "
+                "students study together in the same classes. There are "
+                "no separate classes or sections based on gender.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Co-Educational (Not Gender-Segregated)",
+        "trigger": r"\b(co-?education|coed|separate\s+class|gender\s+segregat|boys?\s+only|girls?\s+only|male\s+and\s+female|mixed\s+class)\b",
+    },
+    {
+        "text": "Buying a degree without genuinely completing the required "
+                "coursework and attending as a real, enrolled student is "
+                "NOT permitted — Lahore Leads University does not sell "
+                "degrees. Similarly, obtaining a degree entirely from "
+                "abroad without ever physically attending or enrolling "
+                "as a proper student is NOT permitted — there is no "
+                "remote-only or attendance-free degree option for "
+                "students who wish to stay in their home country while "
+                "avoiding actual study or enrollment. All students, "
+                "including international/overseas applicants who "
+                "genuinely want to study, must go through the standard "
+                "admission process and actually attend/study.",
+        "url": "https://leads.edu.pk/islamabad-campus/",
+        "title": "Islamabad Campus — Academic Integrity (No Degree Buying / No Remote-Only Degrees)",
+        "trigger": r"\b(buy\s+(a\s+)?degree|purchase\s+(a\s+)?degree|degree\s+without\s+(attending|studying|coming)|without\s+attending|sitting\s+(there|abroad|at\s+home)|from\s+abroad\s+without|no\s+need\s+to\s+attend)\b",
     },
 ]
