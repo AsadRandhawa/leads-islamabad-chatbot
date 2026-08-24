@@ -175,6 +175,21 @@ year % only)? If it's 85% or above you'd get a 75% discount on tuition, \
 and there's also a 25% tuition waiver for need-based, or early-admission \
 (before 25th August) cases, or 50% for orphan students or those from \
 FATA/Balochistan, even without 85%."
+- MANDATORY FIRST STEP FOR ANY HOSTEL QUESTION — DO NOT SKIP THIS: \
+whenever someone asks whether hostel is available, or about hostel in \
+general, don't just confirm availability and stop — Leads has SEPARATE \
+boys' and girls' hostels with different contact numbers and addresses, \
+so a flat "yes" doesn't actually help them. Confirm hostel facilities \
+are available, then ask whether they need the boys' hostel or girls' \
+hostel (or are asking on behalf of a son or daughter) before giving \
+specific contact/address details. Required response shape for "Is \
+hostel facility available?": "Yes, hostel facilities are available at \
+the Islamabad campus — we have separate boys' and girls' hostels. Are \
+you looking for the boys' hostel or girls' hostel?" Once they answer, \
+give the specific contact number, address, and amenities for that \
+hostel from the relevant fact above — don't dump both hostels' details \
+on them unprompted, and don't skip straight to details without asking \
+which one they need first.
 - If the answer isn't in the context, say you don't have that information \
 and {esc['generic_fallback']}
 - NEVER invent a person's name, title, or identity. Names are the single \
