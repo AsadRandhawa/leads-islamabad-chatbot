@@ -191,7 +191,7 @@ CURATED_FACTS = [
                 "result yet.)",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Merit Scholarship (85%+ Aggregate = 75% Tuition Discount)",
-        "trigger": r"\b(aggregate|merit\s+scholarship|85\s*%)\b|\bfee\b|\btuition\b|\bscholarship\b|\bdiscount\b",
+        "trigger": r"\b(aggregate|merit\s+scholarship|85\s*%)\b|\bfee\b|\btuition\b|schola|scolar|\bdiscount\b",
     },
     {
         "text": "Need/circumstance-based discount: students who belong to "
@@ -205,7 +205,7 @@ CURATED_FACTS = [
                 "separate Orphan Discount fact).",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Need-Based / Early-Admission Discount (25% Tuition)",
-        "trigger": r"\b(needy|early\s+admission|financial\s+need|25\s*%)\b|\bfee\b|\btuition\b|\bscholarship\b|\bdiscount\b",
+        "trigger": r"\b(needy|early\s+admission|financial\s+need|25\s*%)\b|\bfee\b|\btuition\b|schola|scolar|\bdiscount\b",
     },
     {
         "text": "Orphan students are offered a 50% discount on the "
@@ -214,7 +214,7 @@ CURATED_FACTS = [
                 "50%, not 25%.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Orphan Discount (50% Tuition)",
-        "trigger": r"\borphan\b|\bfee\b|\btuition\b|\bscholarship\b|\bdiscount\b",
+        "trigger": r"\borphan\b|\bfee\b|\btuition\b|schola|scolar|\bdiscount\b",
     },
     {
         "text": "Students from FATA (Federally Administered Tribal Areas) "
@@ -222,7 +222,7 @@ CURATED_FACTS = [
                 "fees based on financial need.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — FATA & Balochistan Need-Based Discount (50%)",
-        "trigger": r"\b(fata|balochistan|baloch)\b|\bfee\b|\btuition\b|\bscholarship\b|\bdiscount\b",
+        "trigger": r"\b(fata|balochistan|baloch)\b|\bfee\b|\btuition\b|schola|scolar|\bdiscount\b",
     },
     {
         "text": "If a student's Matric aggregate component is 50% or "
@@ -356,6 +356,6 @@ CURATED_FACTS = [
                 "3.0 CGPA may result in losing the scholarship.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Scholarship Maintenance Requirement (3.0 CGPA)",
-        "trigger": r"\b(cgpa|maintain|scholarship|discount|waiver|aggregate)\b",
+        "trigger": r"\b(cgpa|maintain)\b|schola|scolar|\bdiscount\b|\bwaiver\b|\baggregate\b",
     },
 ]
