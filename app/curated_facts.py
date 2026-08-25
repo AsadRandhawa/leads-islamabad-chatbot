@@ -356,6 +356,6 @@ CURATED_FACTS = [
                 "3.0 CGPA may result in losing the scholarship.",
         "url": "https://leads.edu.pk/islamabad-campus/",
         "title": "Islamabad Campus — Scholarship Maintenance Requirement (3.0 CGPA)",
-        "trigger": r"\b(cgpa|maintain)\b|schola|scolar|\bdiscount\b|\bwaiver\b|\baggregate\b",
+        "trigger": r"\bcgpa\b|\bgpa\b|maintain|keep\s+(my|the|a)\s+scholarship|minimum\s+grade",
     },
 ]
