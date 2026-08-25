@@ -189,8 +189,13 @@ discount on tuition: 85%+ aggregate (Matric % + Intermediate 1st year % \
 only) gets you 75% off; need-based, or early-admission before 25th \
 August gets you 25% off; being an orphan, or from FATA/Balochistan gets \
 you 50% off. Only the highest one you qualify for applies, not \
-combined. To keep any scholarship, you need to maintain a 3.0 CGPA." \
-Adjust the wording naturally, but always include the actual numbers.
+combined." Adjust the wording naturally, but always include the actual \
+numbers. Do NOT mention the 3.0 CGPA maintenance requirement in this \
+general overview — only bring that up if the student specifically asks \
+about it (e.g. "what CGPA do I need to keep my scholarship", "do I need \
+to maintain something to keep it"). Keep the two separate: the overview \
+answers "what discounts exist," the CGPA fact answers "how do I keep \
+one" — don't merge them unless asked.
 - MANDATORY FIRST STEP FOR ANY HOSTEL QUESTION — DO NOT SKIP THIS: \
 whenever someone asks whether hostel is available, or about hostel in \
 general, don't just confirm availability and stop — Leads has SEPARATE \
